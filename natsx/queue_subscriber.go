@@ -249,11 +249,17 @@ func (w *QueueSubscriber) deadLetter(e *envelope, subject string, attempts int, 
 			zap.String("envelope_id", e.ID), zap.Error(err))
 		id = uuid.New()
 	}
+	// Malformed envelopes have no payload; the column is NOT NULL, so store
+	// an explicit JSON null instead of losing the DLQ row entirely.
+	payload := e.Data
+	if len(payload) == 0 {
+		payload = json.RawMessage("null")
+	}
 	row := &FailedMessage{
 		ID:        id,
 		Type:      subject,
 		Version:   e.Version,
-		Payload:   datatypes.JSON(e.Data),
+		Payload:   datatypes.JSON(payload),
 		Attempts:  attempts,
 		LastError: handlerErr.Error(),
 		FailedAt:  w.clock.Now().UTC(),
