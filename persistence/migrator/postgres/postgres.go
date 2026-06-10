@@ -49,11 +49,25 @@ func (m *Migrator) instance() (*migrate.Migrate, error) {
 	return mg, nil
 }
 
+// close releases the migrate instance's dedicated database connection back to
+// the pool. Without this every operation leaks one pooled connection, which
+// deadlocks small test pools (e.g. Fresh on suite teardown blocking forever).
+func (m *Migrator) close(mg *migrate.Migrate) {
+	srcErr, dbErr := mg.Close()
+	if srcErr != nil || dbErr != nil {
+		m.logger.Warn("migrator: close failed",
+			zap.NamedError("source", srcErr),
+			zap.NamedError("db", dbErr),
+		)
+	}
+}
+
 func (m *Migrator) Status(_ context.Context) (*contract.Status, error) {
 	mg, err := m.instance()
 	if err != nil {
 		return nil, err
 	}
+	defer m.close(mg)
 	version, dirty, err := mg.Version()
 	if errors.Is(err, migrate.ErrNilVersion) {
 		return &contract.Status{HasVersion: false}, nil
@@ -69,6 +83,7 @@ func (m *Migrator) Migrate(_ context.Context) error {
 	if err != nil {
 		return err
 	}
+	defer m.close(mg)
 	if err = mg.Up(); errors.Is(err, migrate.ErrNoChange) {
 		m.logger.Info("migrator: no new migrations")
 		return nil
@@ -81,6 +96,7 @@ func (m *Migrator) Rollback(_ context.Context) error {
 	if err != nil {
 		return err
 	}
+	defer m.close(mg)
 	return errors.Wrap(mg.Steps(-1), "migrator: rollback")
 }
 
@@ -91,7 +107,10 @@ func (m *Migrator) Fresh(ctx context.Context) error {
 	}
 	m.logger.Info("migrator: dropping all tables", zap.String("db", m.dbName))
 	if dropErr := mg.Drop(); dropErr != nil && !errors.Is(dropErr, migrate.ErrNoChange) {
+		m.close(mg)
 		return errors.Wrap(dropErr, "migrator: drop")
 	}
+	// Release the drop instance's connection before Migrate acquires its own.
+	m.close(mg)
 	return m.Migrate(ctx)
 }
