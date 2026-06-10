@@ -33,9 +33,16 @@ func New(cfg pconfig.Config, l logger.Logger, c *connector.Connector) contract.M
 	}
 }
 
-func (m *Migrator) instance() (*migrate.Migrate, error) {
-	driver, err := migratepostgres.WithInstance(m.db, &migratepostgres.Config{DatabaseName: m.dbName})
+func (m *Migrator) instance(ctx context.Context) (*migrate.Migrate, error) {
+	// Build the driver on a dedicated connection (not the whole pool) so
+	// closing the migrate instance releases exactly that connection.
+	conn, err := m.db.Conn(ctx)
 	if err != nil {
+		return nil, errors.Wrap(err, "migrator: acquire connection")
+	}
+	driver, err := migratepostgres.WithConnection(ctx, conn, &migratepostgres.Config{DatabaseName: m.dbName})
+	if err != nil {
+		_ = conn.Close()
 		return nil, errors.Wrap(err, "migrator: create driver")
 	}
 	mg, err := migrate.NewWithDatabaseInstance(
@@ -62,8 +69,8 @@ func (m *Migrator) close(mg *migrate.Migrate) {
 	}
 }
 
-func (m *Migrator) Status(_ context.Context) (*contract.Status, error) {
-	mg, err := m.instance()
+func (m *Migrator) Status(ctx context.Context) (*contract.Status, error) {
+	mg, err := m.instance(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -78,8 +85,8 @@ func (m *Migrator) Status(_ context.Context) (*contract.Status, error) {
 	return &contract.Status{Version: version, HasVersion: true, Dirty: dirty}, nil
 }
 
-func (m *Migrator) Migrate(_ context.Context) error {
-	mg, err := m.instance()
+func (m *Migrator) Migrate(ctx context.Context) error {
+	mg, err := m.instance(ctx)
 	if err != nil {
 		return err
 	}
@@ -91,8 +98,8 @@ func (m *Migrator) Migrate(_ context.Context) error {
 	return errors.Wrap(err, "migrator: up")
 }
 
-func (m *Migrator) Rollback(_ context.Context) error {
-	mg, err := m.instance()
+func (m *Migrator) Rollback(ctx context.Context) error {
+	mg, err := m.instance(ctx)
 	if err != nil {
 		return err
 	}
@@ -101,7 +108,7 @@ func (m *Migrator) Rollback(_ context.Context) error {
 }
 
 func (m *Migrator) Fresh(ctx context.Context) error {
-	mg, err := m.instance()
+	mg, err := m.instance(ctx)
 	if err != nil {
 		return err
 	}
