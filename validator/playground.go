@@ -19,12 +19,34 @@ type Playground struct {
 	validator *playgroundLib.Validate
 }
 
-func NewPlayground() *Playground {
+// Option extends the underlying validator with service-specific aliases or
+// custom validation functions.
+type Option func(v *playgroundLib.Validate)
+
+// WithAlias registers a tag alias (e.g. "asset_category" →
+// "required,oneof=...").
+func WithAlias(alias, tags string) Option {
+	return func(v *playgroundLib.Validate) { v.RegisterAlias(alias, tags) }
+}
+
+// WithValidation registers a custom validation function under the given tag.
+func WithValidation(tag string, fn playgroundLib.Func) Option {
+	return func(v *playgroundLib.Validate) {
+		if err := v.RegisterValidation(tag, fn); err != nil {
+			panic(fmt.Sprintf("failed to register %q validator: %v", tag, err))
+		}
+	}
+}
+
+func NewPlayground(opts ...Option) *Playground {
 	v := playgroundLib.New()
 	if err := v.RegisterValidation("locale", func(fl playgroundLib.FieldLevel) bool {
 		return localeRegexp.MatchString(fl.Field().String())
 	}); err != nil {
 		panic(fmt.Sprintf("failed to register locale validator: %v", err))
+	}
+	for _, opt := range opts {
+		opt(v)
 	}
 	return &Playground{validator: v}
 }
