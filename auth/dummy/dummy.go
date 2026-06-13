@@ -45,3 +45,11 @@ func (a *Authenticator[U]) Authenticate(
 	}
 	return &actor, u, nil
 }
+
+// EnsureRoles is a no-op: the dummy token already encodes the full actor,
+// including its permissions and admin flag.
+func (a *Authenticator[U]) EnsureRoles(
+	_ context.Context, _ string, actor *authorization.Actor,
+) (*authorization.Actor, error) {
+	return actor, nil
+}

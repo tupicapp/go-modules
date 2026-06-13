@@ -2,11 +2,9 @@ package echox
 
 import (
 	"context"
-	"strings"
 
 	labecho "github.com/labstack/echo/v5"
 	"github.com/tupic/common-go/authorization"
-	authrequest "github.com/tupic/common-go/authorization/requestcontext"
 )
 
 // AuthConfig wires the shared auth middleware to a service. New fields can be
@@ -21,17 +19,15 @@ type AuthConfig[U any] struct {
 	// service's own context key, so downstream handlers can fetch it with
 	// the service's UserFromContext.
 	WithUser func(ctx context.Context, u *U) context.Context
-
-	// AdminPathPrefix marks the route subtree whose requests need admin-role
-	// hydration from the userinfo endpoint (e.g. "/assets/v1/admin").
-	// Empty disables hydration.
-	AdminPathPrefix string
 }
 
 // AuthMiddleware resolves the actor and user from the Bearer token; the
 // request continues without an actor if the token is absent or invalid —
 // route guards (RequireUser, RequireAdmin, RequireService) decide whether an
 // anonymous request may proceed.
+//
+// The actor's realm roles are taken from the token as-is. Routes that need
+// them complete (admin routes) add EnsureAdminRoles to their group.
 func AuthMiddleware[U any](cfg AuthConfig[U]) labecho.MiddlewareFunc {
 	return func(next labecho.HandlerFunc) labecho.HandlerFunc {
 		return func(c *labecho.Context) error {
@@ -40,17 +36,12 @@ func AuthMiddleware[U any](cfg AuthConfig[U]) labecho.MiddlewareFunc {
 				return next(c)
 			}
 
-			ctx := c.Request().Context()
-			if requiresAdminRoleHydration(c.Request().URL.Path, cfg.AdminPathPrefix) {
-				ctx = authrequest.ContextWithAdminRoleHydration(ctx)
-			}
-
-			actor, u, err := cfg.Authenticate(ctx, token)
+			actor, u, err := cfg.Authenticate(c.Request().Context(), token)
 			if err != nil {
 				return next(c)
 			}
 
-			ctx = authorization.ContextWithActor(ctx, actor)
+			ctx := authorization.ContextWithActor(c.Request().Context(), actor)
 			// Service-account tokens authenticate without a user — guard
 			// against storing a nil user in the request context.
 			if u != nil {
@@ -63,9 +54,35 @@ func AuthMiddleware[U any](cfg AuthConfig[U]) labecho.MiddlewareFunc {
 	}
 }
 
-func requiresAdminRoleHydration(path, prefix string) bool {
-	if prefix == "" {
-		return false
+// EnsureAdminRoles returns middleware that completes the authenticated actor's
+// realm roles before the route runs, fetching them from the identity provider
+// when the access token omitted them. Apply it to the admin route group,
+// ahead of RequireAdmin — it is the explicit declaration that this subtree
+// needs accurate roles.
+//
+// ensure is typically the auth driver's EnsureRoles method. Failures fail
+// closed: the un-hydrated actor proceeds, so RequireAdmin denies access rather
+// than letting a userinfo outage 500 the request.
+func EnsureAdminRoles(
+	ensure func(ctx context.Context, token string, actor *authorization.Actor) (*authorization.Actor, error),
+) labecho.MiddlewareFunc {
+	return func(next labecho.HandlerFunc) labecho.HandlerFunc {
+		return func(c *labecho.Context) error {
+			actor := authorization.ActorFromContext(c.Request().Context())
+			if actor == nil {
+				return next(c)
+			}
+
+			hydrated, err := ensure(c.Request().Context(), BearerToken(c), actor)
+			if err != nil {
+				// Fail closed: proceed with the un-hydrated actor; RequireAdmin
+				// will deny since its roles could not be confirmed.
+				return next(c)
+			}
+
+			ctx := authorization.ContextWithActor(c.Request().Context(), hydrated)
+			c.SetRequest(c.Request().WithContext(ctx))
+			return next(c)
+		}
 	}
-	return path == prefix || strings.HasPrefix(path, prefix+"/")
 }

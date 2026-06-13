@@ -1,9 +1,9 @@
 // Package iam authenticates requests using Tupic IAM (Keycloak) JWTs.
 //
 // The package is generic over the service's user entity: JWT validation,
-// claims parsing, userinfo hydration, and actor construction are shared,
-// while user resolution (find-or-create against the service's user store)
-// is delegated to a service-supplied UserResolver.
+// claims parsing, and actor construction are shared, while user resolution
+// (find-or-create against the service's user store) is delegated to a
+// service-supplied UserResolver.
 //
 // # Token kinds
 //
@@ -17,12 +17,12 @@
 //
 // # Admin-role hydration
 //
-// Keycloak access tokens may omit realm roles. For requests that need them
-// (admin routes), the HTTP layer marks the context via
-// requestcontext.ContextWithAdminRoleHydration; when the marked request's
-// token has no roles, the authenticator fetches them from the userinfo
-// endpoint and merges the result into the claims. Unmarked requests skip the
-// extra round-trip.
+// Keycloak access tokens may omit realm roles. Authenticate builds the actor
+// from whatever roles the token carries (so most requests pay nothing). Routes
+// that actually need accurate roles — admin routes — call EnsureRoles, which
+// fetches them from the userinfo endpoint when the actor has none. The HTTP
+// layer wires this as an explicit middleware on the admin route group (see
+// echox.EnsureAdminRoles); there is no hidden per-request flag.
 package iam
 
 import (
@@ -35,7 +35,6 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/google/uuid"
 	"github.com/tupic/common-go/authorization"
-	authrequest "github.com/tupic/common-go/authorization/requestcontext"
 )
 
 // Config carries the IAM endpoints and the service identity used for admin
@@ -131,13 +130,20 @@ func New[U any](cfg Config, resolver UserResolver[U], opts ...Option) *Authentic
 		validator: newValidator(cfg, o),
 		resolver:  resolver,
 		userInfo:  newUserInfoClient(cfg, o),
-		adminRole: "admin:" + strings.ToLower(cfg.ServiceName) + ":*",
+		adminRole: adminRoleFor(cfg.ServiceName),
 	}
 }
 
+func adminRoleFor(service string) string {
+	return "admin:" + strings.ToLower(service) + ":*"
+}
+
 // Authenticate verifies the token signature and claims, then builds the
-// caller's identity: a service actor for service-account tokens, or a user
-// actor plus the resolved user entity for user tokens.
+// caller's identity from the token alone: a service actor for service-account
+// tokens, or a user actor plus the resolved user entity for user tokens.
+//
+// Realm roles are taken as-is from the token; routes that need them complete
+// call EnsureRoles.
 func (a *Authenticator[U]) Authenticate(
 	ctx context.Context, token string,
 ) (*authorization.Actor, *U, error) {
@@ -151,12 +157,32 @@ func (a *Authenticator[U]) Authenticate(
 		return actor, nil, errors.WithStack(err)
 	}
 
-	c, err = a.maybeHydrateAdminRoles(ctx, token, c)
-	if err != nil {
-		return nil, nil, errors.WithStack(err)
+	return a.userActor(ctx, c)
+}
+
+// EnsureRoles guarantees the actor's realm roles are populated, fetching them
+// from the userinfo endpoint when the access token carried none. It is a
+// no-op for actors that already have roles, for service actors, and when no
+// userinfo endpoint is configured — so it is safe to call on any actor.
+func (a *Authenticator[U]) EnsureRoles(
+	ctx context.Context, token string, actor *authorization.Actor,
+) (*authorization.Actor, error) {
+	if a.userInfo == nil || actor == nil ||
+		actor.Type != authorization.ActorTypeUser || len(actor.Permissions) > 0 {
+		return actor, nil
 	}
 
-	return a.userActor(ctx, c)
+	claims, err := a.userInfo.fetch(ctx, token)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	if claims.Sub != "" && claims.Sub != actor.ID.String() {
+		return nil, errors.New("iam: userinfo subject does not match actor")
+	}
+
+	actor.Permissions = claims.RealmAccess.Roles
+	actor.IsAdmin = slices.Contains(claims.RealmAccess.Roles, a.adminRole)
+	return actor, nil
 }
 
 // serviceActor builds the actor for an internal machine client. Service
@@ -173,23 +199,6 @@ func (a *Authenticator[U]) serviceActor(c *Claims) (*authorization.Actor, error)
 		ClientID: c.ServiceAccountClientID,
 		Scopes:   strings.Fields(c.Scope),
 	}, nil
-}
-
-// maybeHydrateAdminRoles fills missing realm roles from the userinfo endpoint
-// when the request context asks for it (admin routes). See the package doc.
-func (a *Authenticator[U]) maybeHydrateAdminRoles(
-	ctx context.Context, token string, c *Claims,
-) (*Claims, error) {
-	if a.userInfo == nil || !authrequest.ShouldHydrateAdminRoles(ctx) || len(c.RealmAccess.Roles) > 0 {
-		return c, nil
-	}
-
-	userInfoClaims, err := a.userInfo.fetch(ctx, token)
-	if err != nil {
-		return nil, errors.WithStack(err)
-	}
-
-	return mergeClaims(c, userInfoClaims)
 }
 
 // userActor resolves the service's user entity and builds the user actor.
@@ -213,44 +222,4 @@ func (a *Authenticator[U]) userActor(ctx context.Context, c *Claims) (*authoriza
 		IsAdmin:     slices.Contains(c.RealmAccess.Roles, a.adminRole),
 		Locale:      c.Locale,
 	}, u, nil
-}
-
-// mergeClaims overlays userinfo claims onto access-token claims, never
-// overwriting a field the token already carries. Subjects must match —
-// a mismatch means the userinfo response belongs to someone else.
-func mergeClaims(base, hydrated *Claims) (*Claims, error) {
-	if base == nil {
-		return hydrated, nil
-	}
-	if hydrated == nil {
-		return base, nil
-	}
-	if hydrated.Sub != "" && base.Sub != "" && hydrated.Sub != base.Sub {
-		return nil, errors.New("iam: userinfo subject does not match access token subject")
-	}
-
-	merged := *base
-	if merged.Email == "" {
-		merged.Email = hydrated.Email
-	}
-	if merged.PreferredUsername == "" {
-		merged.PreferredUsername = hydrated.PreferredUsername
-	}
-	if merged.GivenName == "" {
-		merged.GivenName = hydrated.GivenName
-	}
-	if merged.FamilyName == "" {
-		merged.FamilyName = hydrated.FamilyName
-	}
-	if merged.CountryISO == "" {
-		merged.CountryISO = hydrated.CountryISO
-	}
-	if merged.Locale == "" {
-		merged.Locale = hydrated.Locale
-	}
-	if len(merged.RealmAccess.Roles) == 0 {
-		merged.RealmAccess = hydrated.RealmAccess
-	}
-
-	return &merged, nil
 }

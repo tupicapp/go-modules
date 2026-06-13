@@ -11,7 +11,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 	"github.com/tupic/common-go/authorization"
-	authrequest "github.com/tupic/common-go/authorization/requestcontext"
 )
 
 // testUser is the stand-in for a service's user entity.
@@ -239,53 +238,19 @@ func (s *AuthenticatorSuite) TestAuthenticate_InvalidSub_ReturnsError() {
 	s.Contains(err.Error(), "not a valid UUID")
 }
 
-func (s *AuthenticatorSuite) TestAuthenticate_HydratesAdminRoleFromUserInfo() {
+// TestAuthenticate_UsesTokenRolesOnly verifies Authenticate never fetches:
+// a token without roles yields an actor with no roles and IsAdmin false,
+// regardless of what userinfo would return.
+func (s *AuthenticatorSuite) TestAuthenticate_UsesTokenRolesOnly() {
 	userID := uuid.New()
+	token := s.signer.sign(&Claims{
+		Sub:   userID.String(),
+		Iss:   s.issuer(),
+		Email: "admin@example.com",
+		Scope: "openid profile email",
+	})
 
-	c := Claims{
-		Sub:               userID.String(),
-		Iss:               s.issuer(),
-		Email:             "admin@example.com",
-		PreferredUsername: "admin",
-		Scope:             "openid profile email",
-	}
-	token := s.signer.sign(&c)
-
-	s.userInfoAuthToken = token
-	s.userInfoClaims = &Claims{
-		Sub:               userID.String(),
-		Iss:               s.issuer(),
-		Email:             "admin@example.com",
-		PreferredUsername: "admin",
-		RealmAccess:       RealmAccess{Roles: []string{"admin:assets:*"}},
-	}
-
-	actor, _, err := s.auth.Authenticate(authrequest.ContextWithAdminRoleHydration(context.Background()), token)
-	s.Require().NoError(err)
-	s.True(actor.IsAdmin)
-	s.Equal([]string{"admin:assets:*"}, actor.Permissions)
-}
-
-func (s *AuthenticatorSuite) TestAuthenticate_DoesNotHydrateUserInfoOutsideAdminRoutes() {
-	userID := uuid.New()
-
-	c := Claims{
-		Sub:               userID.String(),
-		Iss:               s.issuer(),
-		Email:             "admin@example.com",
-		PreferredUsername: "admin",
-		Scope:             "openid profile email",
-	}
-	token := s.signer.sign(&c)
-
-	s.userInfoAuthToken = token
-	s.userInfoClaims = &Claims{
-		Sub:               userID.String(),
-		Iss:               s.issuer(),
-		Email:             "admin@example.com",
-		PreferredUsername: "admin",
-		RealmAccess:       RealmAccess{Roles: []string{"admin:assets:*"}},
-	}
+	s.userInfoClaims = &Claims{Sub: userID.String(), RealmAccess: RealmAccess{Roles: []string{"admin:assets:*"}}}
 
 	actor, _, err := s.auth.Authenticate(context.Background(), token)
 	s.Require().NoError(err)
@@ -293,16 +258,77 @@ func (s *AuthenticatorSuite) TestAuthenticate_DoesNotHydrateUserInfoOutsideAdmin
 	s.Empty(actor.Permissions)
 }
 
-func (s *AuthenticatorSuite) TestAuthenticate_UserInfoSubjectMismatch_ReturnsError() {
+// TestEnsureRoles_FetchesFromUserInfo verifies that EnsureRoles populates a
+// roleless actor from the userinfo endpoint and recomputes IsAdmin.
+func (s *AuthenticatorSuite) TestEnsureRoles_FetchesFromUserInfo() {
 	userID := uuid.New()
-	c := Claims{
-		Sub:               userID.String(),
-		Iss:               s.issuer(),
-		Email:             "admin@example.com",
-		PreferredUsername: "admin",
-		Scope:             "openid profile email",
+	token := s.signer.sign(&Claims{
+		Sub:   userID.String(),
+		Iss:   s.issuer(),
+		Email: "admin@example.com",
+		Scope: "openid profile email",
+	})
+
+	s.userInfoAuthToken = token
+	s.userInfoClaims = &Claims{
+		Sub:         userID.String(),
+		Iss:         s.issuer(),
+		RealmAccess: RealmAccess{Roles: []string{"admin:assets:*"}},
 	}
-	token := s.signer.sign(&c)
+
+	actor, _, err := s.auth.Authenticate(context.Background(), token)
+	s.Require().NoError(err)
+	s.Require().False(actor.IsAdmin)
+
+	hydrated, err := s.auth.EnsureRoles(context.Background(), token, actor)
+	s.Require().NoError(err)
+	s.True(hydrated.IsAdmin)
+	s.Equal([]string{"admin:assets:*"}, hydrated.Permissions)
+}
+
+// TestEnsureRoles_NoopWhenTokenHasRoles verifies EnsureRoles does not fetch
+// when the actor already carries roles.
+func (s *AuthenticatorSuite) TestEnsureRoles_NoopWhenTokenHasRoles() {
+	userID := uuid.New()
+	token := s.signer.sign(&Claims{
+		Sub:         userID.String(),
+		Iss:         s.issuer(),
+		Email:       "admin@example.com",
+		Scope:       "openid profile email",
+		RealmAccess: RealmAccess{Roles: []string{"editor"}},
+	})
+	// Userinfo would return admin roles, but EnsureRoles must not call it.
+	s.userInfoClaims = &Claims{Sub: userID.String(), RealmAccess: RealmAccess{Roles: []string{"admin:assets:*"}}}
+
+	actor, _, err := s.auth.Authenticate(context.Background(), token)
+	s.Require().NoError(err)
+
+	hydrated, err := s.auth.EnsureRoles(context.Background(), token, actor)
+	s.Require().NoError(err)
+	s.Equal([]string{"editor"}, hydrated.Permissions)
+	s.False(hydrated.IsAdmin)
+}
+
+// TestEnsureRoles_NoopForServiceActor verifies service actors are never
+// hydrated.
+func (s *AuthenticatorSuite) TestEnsureRoles_NoopForServiceActor() {
+	actor := &authorization.Actor{ID: uuid.New(), Type: authorization.ActorTypeService}
+	out, err := s.auth.EnsureRoles(context.Background(), "tok", actor)
+	s.Require().NoError(err)
+	s.Same(actor, out)
+	s.Empty(out.Permissions)
+}
+
+// TestEnsureRoles_SubjectMismatch_ReturnsError verifies that a userinfo
+// response for a different subject is rejected.
+func (s *AuthenticatorSuite) TestEnsureRoles_SubjectMismatch_ReturnsError() {
+	userID := uuid.New()
+	token := s.signer.sign(&Claims{
+		Sub:   userID.String(),
+		Iss:   s.issuer(),
+		Email: "admin@example.com",
+		Scope: "openid profile email",
+	})
 
 	s.userInfoAuthToken = token
 	s.userInfoClaims = &Claims{
@@ -311,7 +337,10 @@ func (s *AuthenticatorSuite) TestAuthenticate_UserInfoSubjectMismatch_ReturnsErr
 		RealmAccess: RealmAccess{Roles: []string{"admin:assets:*"}},
 	}
 
-	_, _, err := s.auth.Authenticate(authrequest.ContextWithAdminRoleHydration(context.Background()), token)
+	actor, _, err := s.auth.Authenticate(context.Background(), token)
+	s.Require().NoError(err)
+
+	_, err = s.auth.EnsureRoles(context.Background(), token, actor)
 	s.Require().Error(err)
 	s.Contains(err.Error(), "userinfo subject does not match")
 }
