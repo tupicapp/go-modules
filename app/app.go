@@ -1,6 +1,6 @@
-// Package appx provides shared application bootstrap helpers: startup/shutdown
+// Package app provides shared application bootstrap helpers: startup/shutdown
 // lifecycle logging and the console application runner.
-package appx
+package app
 
 import (
 	"context"
@@ -25,7 +25,7 @@ type Info struct {
 }
 
 // Lifecycle returns an fx option that logs application start and stop.
-// Requires an appx.Info and a logger.Logger in the graph.
+// Requires an app.Info and a logger.Logger in the graph.
 func Lifecycle() fx.Option {
 	return fx.Invoke(func(lc fx.Lifecycle, l logger.Logger, info Info) {
 		lc.Append(fx.Hook{
