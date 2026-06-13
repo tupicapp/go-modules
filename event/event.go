@@ -1,5 +1,5 @@
-// Package event defines the domain-event contract and the in-process
-// synchronous event bus shared by all Tupic services.
+// Package event defines the domain-event contract and the in-process synchronous event bus shared by all Tupic
+// services.
 package event
 
 import "context"

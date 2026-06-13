@@ -6,7 +6,7 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/google/uuid"
-	"github.com/tupic/common-go/persistence/uow"
+	"github.com/tupicapp/common-go/persistence/uow"
 	"gorm.io/gorm"
 )
 
@@ -52,9 +52,8 @@ func (r *repository) markPublished(ctx context.Context, messageID uuid.UUID, pub
 	return nil
 }
 
-// quarantine permanently excludes an event from future relay attempts by
-// setting failed_at. Only called for permanent failures (e.g. marshal errors)
-// where retrying would never succeed regardless of broker state.
+// quarantine permanently excludes an event from future relay attempts by setting failed_at. Only called for permanent
+// failures (e.g. marshal errors) where retrying would never succeed regardless of broker state.
 func (r *repository) quarantine(ctx context.Context, messageID uuid.UUID, lastError string, failedAt time.Time) error {
 	res := r.db.WithContext(ctx).
 		Model(&Event{}).

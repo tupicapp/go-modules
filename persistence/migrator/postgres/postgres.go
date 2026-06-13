@@ -10,10 +10,10 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	migratepostgres "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-	"github.com/tupic/common-go/logger"
-	pconfig "github.com/tupic/common-go/persistence/config"
-	"github.com/tupic/common-go/persistence/connector"
-	"github.com/tupic/common-go/persistence/migrator/contract"
+	"github.com/tupicapp/common-go/logger"
+	pconfig "github.com/tupicapp/common-go/persistence/config"
+	"github.com/tupicapp/common-go/persistence/connector"
+	"github.com/tupicapp/common-go/persistence/migrator/contract"
 	"go.uber.org/zap"
 )
 
@@ -34,8 +34,8 @@ func New(cfg pconfig.Config, l logger.Logger, c *connector.Connector) contract.M
 }
 
 func (m *Migrator) instance(ctx context.Context) (*migrate.Migrate, error) {
-	// Build the driver on a dedicated connection (not the whole pool) so
-	// closing the migrate instance releases exactly that connection.
+	// Build the driver on a dedicated connection (not the whole pool) so closing the migrate instance releases exactly
+	// that connection.
 	conn, err := m.db.Conn(ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "migrator: acquire connection")
@@ -56,9 +56,8 @@ func (m *Migrator) instance(ctx context.Context) (*migrate.Migrate, error) {
 	return mg, nil
 }
 
-// close releases the migrate instance's dedicated database connection back to
-// the pool. Without this every operation leaks one pooled connection, which
-// deadlocks small test pools (e.g. Fresh on suite teardown blocking forever).
+// close releases the migrate instance's dedicated database connection back to the pool. Without this every operation
+// leaks one pooled connection, which deadlocks small test pools (e.g. Fresh on suite teardown blocking forever).
 func (m *Migrator) close(mg *migrate.Migrate) {
 	srcErr, dbErr := mg.Close()
 	if srcErr != nil || dbErr != nil {

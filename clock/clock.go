@@ -1,11 +1,9 @@
-// Package clock provides the Clock contract plus system and fixed
-// implementations for production and tests.
+// Package clock provides the Clock contract to provide time with testability.
 package clock
 
 import "time"
 
-// Clock defines an interface for getting the current time, allowing for easier
-// testing and time manipulation.
+// Clock defines an interface for getting the current time, allowing for easier testing and time manipulation.
 type Clock interface {
 	Now() time.Time
 }

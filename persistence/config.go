@@ -1,8 +1,7 @@
-// Package persistence wires the database connector, migrator, and unit of
-// work shared by all Tupic services.
+// Package persistence wires the database connector, migrator, and unit of work shared by all Tupic services.
 package persistence
 
-import "github.com/tupic/common-go/persistence/config"
+import "github.com/tupicapp/common-go/persistence/config"
 
 // PostgresConfig holds PostgreSQL connection settings.
 type PostgresConfig = config.PostgresConfig

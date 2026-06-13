@@ -8,20 +8,19 @@ import (
 
 	"github.com/cockroachdb/errors"
 	natslib "github.com/nats-io/nats.go"
-	"github.com/tupic/common-go/clock"
-	"github.com/tupic/common-go/logger"
+	"github.com/tupicapp/common-go/clock"
+	"github.com/tupicapp/common-go/logger"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
 const (
-	// defaultPollInterval is how long the relay waits when the outbox is empty
-	// before polling again. Kept low so rows written inside a UoW transaction
-	// (where the storage write cannot signal after commit) are picked up quickly.
+	// defaultPollInterval is how long the relay waits when the outbox is empty before polling again. Kept low so rows
+	// written inside a UoW transaction (where the storage write cannot signal after commit) are picked up quickly.
 	defaultPollInterval = 100 * time.Millisecond
 
-	// defaultErrorBackoff is the wait after a broker or DB failure before
-	// retrying. Avoids hammering a broken system while still recovering fast.
+	// defaultErrorBackoff is the wait after a broker or DB failure before retrying. Avoids hammering a broken system while
+	// still recovering fast.
 	defaultErrorBackoff = 5 * time.Second
 
 	defaultBatchSize = 100
@@ -44,9 +43,8 @@ type envelope struct {
 	Data      json.RawMessage `json:"data"`
 }
 
-// Relay polls the outbox for unpublished rows, publishes each to NATS
-// JetStream, then marks the row published. It runs as a single goroutine;
-// no per-row concurrency keeps order-per-subject roughly stable.
+// Relay polls the outbox for unpublished rows, publishes each to NATS JetStream, then marks the row published. It runs
+// as a single goroutine; no per-row concurrency keeps order-per-subject roughly stable.
 //
 // Loop behavior:
 //   - Empty outbox → sleep pollInterval, then poll again.
@@ -100,9 +98,8 @@ func NewRelay(
 	}, nil
 }
 
-// Start kicks off the polling goroutine. The startup ctx is checked for early
-// cancellation only — the loop uses the relay's own lifetime context so it
-// is not bounded by the short-lived fx startup context. Idempotent.
+// Start kicks off the polling goroutine. The startup ctx is checked for early cancellation only — the loop uses the
+// relay's own lifetime context so it is not bounded by the short-lived fx startup context. Idempotent.
 func (r *Relay) Start(ctx context.Context) error {
 	if ctx.Err() != nil {
 		return errors.WithStack(ctx.Err())
@@ -173,8 +170,7 @@ func (r *Relay) drain() drainResult {
 	for _, e := range events {
 		eventEnvelope, err := r.makeEnvelope(e)
 		if err != nil {
-			// Permanent: malformed payload will never publish.
-			// Quarantine immediately so it does not block other events.
+			// Permanent: malformed payload will never publish. Quarantine immediately so it does not block other events.
 			r.logger.Error("quarantining event (marshal failure)",
 				zap.String("message_id", e.MessageID.String()),
 				zap.String("subject", e.Subject),
@@ -192,8 +188,8 @@ func (r *Relay) drain() drainResult {
 
 		subject := r.prefix + "." + e.Subject
 		if _, err := r.js.Publish(subject, eventEnvelope, natslib.MsgId(e.MessageID.String())); err != nil {
-			// Transient: NATS unavailable. Stop the batch — all pending events
-			// retry after errorBackoff. Never quarantine for NATS errors.
+			// Transient: NATS unavailable. Stop the batch — all pending events retry after errorBackoff. Never quarantine for
+			// NATS errors.
 			r.logger.Error("outbox: NATS unavailable, stopping batch",
 				zap.String("message_id", e.MessageID.String()),
 				zap.String("subject", subject),
@@ -203,9 +199,8 @@ func (r *Relay) drain() drainResult {
 		}
 
 		if err := r.repo.markPublished(r.ctx, e.MessageID, r.clock.Now().UTC()); err != nil {
-			// Already published to NATS. JetStream dedupes by MsgId within its
-			// Duplicates window — configure the stream with a window >= your
-			// maximum expected relay downtime to avoid duplicate delivery.
+			// Already published to NATS. JetStream dedupes by MsgId within its Duplicates window — configure the stream with a
+			// window >= your maximum expected relay downtime to avoid duplicate delivery.
 			r.logger.Error("outbox: mark published failed",
 				zap.String("message_id", e.MessageID.String()),
 				zap.Error(err),

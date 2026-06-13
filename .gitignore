@@ -1,0 +1,23 @@
+# Credentials & secrets
+.env
+
+# Tooling
+.cache
+.gocache
+.gomodcache
+.golangci-lint-cache/
+compose.override.yaml
+
+# IDE
+.idea
+
+# Claude Code
+.claude/worktrees/
+.mcp.json
+notes/
+
+# OS
+.DS_Store
+
+# Test
+coverage.out

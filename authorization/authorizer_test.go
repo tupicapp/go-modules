@@ -5,8 +5,8 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/stretchr/testify/suite"
-	"github.com/tupic/common-go/apperror"
-	"github.com/tupic/common-go/authorization"
+	"github.com/tupicapp/common-go/apperror"
+	"github.com/tupicapp/common-go/authorization"
 )
 
 const (
@@ -50,8 +50,7 @@ func (s *TokenAuthorizerSuite) TestDefaultScopes_GrantFullAccess() {
 	s.NoError(s.auth().Authorize(actor, permCommentsRead, permCommentsWrite))
 }
 
-// offline_access is optional: its presence does not prevent the standard-flow
-// bypass.
+// offline_access is optional: its presence does not prevent the standard-flow bypass.
 func (s *TokenAuthorizerSuite) TestDefaultScopesWithOfflineAccess_GrantFullAccess() {
 	actor := &authorization.Actor{
 		Scopes: []string{"openid", "profile", "email", "offline_access"},
@@ -160,8 +159,7 @@ func (s *TokenAuthorizerSuite) TestNoPermissionsRequired_AlwaysPasses() {
 	s.NoError(s.auth().Authorize(actor))
 }
 
-// Service actors are fully trusted internal machine clients — no scope or
-// permission checks.
+// Service actors are fully trusted internal machine clients — no scope or permission checks.
 func (s *TokenAuthorizerSuite) TestServiceActor_FullyTrusted_NoScopeRequired() {
 	actor := &authorization.Actor{
 		Type:        authorization.ActorTypeService,

@@ -3,15 +3,15 @@ package persistence
 import (
 	"context"
 
-	"github.com/tupic/common-go/logger"
-	"github.com/tupic/common-go/persistence/connector"
-	"github.com/tupic/common-go/persistence/migrator"
-	"github.com/tupic/common-go/persistence/uow"
+	"github.com/tupicapp/common-go/logger"
+	"github.com/tupicapp/common-go/persistence/connector"
+	"github.com/tupicapp/common-go/persistence/migrator"
+	"github.com/tupicapp/common-go/persistence/uow"
 	"go.uber.org/fx"
 )
 
-// Module provides the connector (with *gorm.DB), migrator, and unit of work.
-// It requires a persistence.Config in the graph, supplied by the service.
+// Module provides the connector (with *gorm.DB), migrator, and unit of work. It requires a persistence.Config in the
+// graph, supplied by the service.
 var Module = fx.Options(
 	fx.Provide(connector.New, migrator.New, uow.New),
 	fx.Invoke(registerLifecycle),

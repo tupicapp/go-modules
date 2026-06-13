@@ -1,5 +1,4 @@
-// Package random provides the Random contract plus a crypto/rand-backed
-// implementation.
+// Package random provides the Random contract plus a crypto/rand-backed implementation.
 package random
 
 import (
@@ -10,8 +9,7 @@ import (
 	"github.com/cockroachdb/errors"
 )
 
-// Random defines an interface for generating random values, such as random
-// strings.
+// Random defines an interface for generating random values, such as random strings.
 type Random interface {
 	String(size int) (string, error)
 }

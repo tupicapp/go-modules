@@ -3,11 +3,11 @@ package migrator
 
 import (
 	"github.com/cockroachdb/errors"
-	"github.com/tupic/common-go/logger"
-	pconfig "github.com/tupic/common-go/persistence/config"
-	"github.com/tupic/common-go/persistence/connector"
-	"github.com/tupic/common-go/persistence/migrator/contract"
-	"github.com/tupic/common-go/persistence/migrator/postgres"
+	"github.com/tupicapp/common-go/logger"
+	pconfig "github.com/tupicapp/common-go/persistence/config"
+	"github.com/tupicapp/common-go/persistence/connector"
+	"github.com/tupicapp/common-go/persistence/migrator/contract"
+	"github.com/tupicapp/common-go/persistence/migrator/postgres"
 )
 
 func New(cfg pconfig.Config, l logger.Logger, c *connector.Connector) (contract.Migrator, error) {

@@ -1,5 +1,4 @@
-// Package utility provides general-purpose helper functions shared across
-// Tupic services.
+// Package utility provides general-purpose helper functions shared across Tupic services.
 package utility
 
 import (

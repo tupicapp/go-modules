@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(go build ./...)",
+      "Bash(go test ./...:*)",
+      "Bash(go vet ./...)",
+      "Bash(gofumpt -w .)",
+      "Bash(golangci-lint run:*)",
+      "Read"
+    ],
+    "defaultMode": "acceptEdits"
+  }
+}

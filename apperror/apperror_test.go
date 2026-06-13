@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/tupic/common-go/apperror"
+	"github.com/tupicapp/common-go/apperror"
 )
 
 type AppErrorSuite struct{ suite.Suite }

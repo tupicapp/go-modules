@@ -1,5 +1,5 @@
-// Package apperror defines the platform-wide application error type used to
-// map domain and application failures to transport-level responses.
+// Package apperror defines the platform-wide application error type used to map domain and application failures to
+// transport-level responses.
 package apperror
 
 import (

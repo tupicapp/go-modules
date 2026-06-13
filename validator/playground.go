@@ -7,11 +7,10 @@ import (
 
 	"github.com/cockroachdb/errors"
 	playgroundLib "github.com/go-playground/validator/v10"
-	"github.com/tupic/common-go/apperror"
+	"github.com/tupicapp/common-go/apperror"
 )
 
-// localeRegexp matches locale codes in the form en-US (ISO 639-1 + ISO 3166-1
-// alpha-2).
+// localeRegexp matches locale codes in the form en-US (ISO 639-1 + ISO 3166-1 alpha-2).
 var localeRegexp = regexp.MustCompile(`^[a-z]{2}-[A-Z]{2}$`)
 
 // Playground validates structs using github.com/go-playground/validator.
@@ -19,12 +18,10 @@ type Playground struct {
 	validator *playgroundLib.Validate
 }
 
-// Option extends the underlying validator with service-specific aliases or
-// custom validation functions.
+// Option extends the underlying validator with service-specific aliases or custom validation functions.
 type Option func(v *playgroundLib.Validate)
 
-// WithAlias registers a tag alias (e.g. "asset_category" →
-// "required,oneof=...").
+// WithAlias registers a tag alias (e.g. "asset_category" → "required,oneof=...").
 func WithAlias(alias, tags string) Option {
 	return func(v *playgroundLib.Validate) { v.RegisterAlias(alias, tags) }
 }

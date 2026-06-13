@@ -1,5 +1,4 @@
-// Package logger provides the Logger contract plus zap, memory, and noop
-// implementations.
+// Package logger provides the Logger contract plus zap, memory, and noop implementations.
 package logger
 
 import (
@@ -7,8 +6,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// Logger is the interface for logging messages with different levels and
-// structured fields.
+// Logger is the interface for logging messages with different levels and structured fields.
 type Logger interface {
 	Debug(msg string, fields ...zap.Field)
 	Info(msg string, fields ...zap.Field)

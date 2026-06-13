@@ -1,6 +1,5 @@
-// Package uow provides the UnitOfWork contract and its GORM transaction
-// implementation, plus the context plumbing repositories use to join an
-// ambient transaction.
+// Package uow provides the UnitOfWork contract and its GORM transaction implementation, plus the context plumbing
+// repositories use to join an ambient transaction.
 package uow
 
 import (
@@ -10,8 +9,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// UnitOfWork wraps multiple repository operations in a single atomic
-// transaction.
+// UnitOfWork wraps multiple repository operations in a single atomic transaction.
 type UnitOfWork interface {
 	Do(ctx context.Context, fn func(ctx context.Context) error) error
 }

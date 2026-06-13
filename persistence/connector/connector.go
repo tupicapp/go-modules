@@ -1,5 +1,4 @@
-// Package connector opens and supervises the SQL connection pool and its GORM
-// handle.
+// Package connector opens and supervises the SQL connection pool and its GORM handle.
 package connector
 
 import (
@@ -10,8 +9,8 @@ import (
 
 	"github.com/cockroachdb/errors"
 	_ "github.com/lib/pq"
-	"github.com/tupic/common-go/logger"
-	pconfig "github.com/tupic/common-go/persistence/config"
+	"github.com/tupicapp/common-go/logger"
+	pconfig "github.com/tupicapp/common-go/persistence/config"
 	"go.uber.org/zap"
 	gormpg "gorm.io/driver/postgres"
 	"gorm.io/gorm"

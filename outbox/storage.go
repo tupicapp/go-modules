@@ -6,13 +6,12 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/google/uuid"
-	"github.com/tupic/common-go/clock"
+	"github.com/tupicapp/common-go/clock"
 	"gorm.io/gorm"
 )
 
-// Storage implements the Outbox port by writing each event to the
-// outbox_events table in the caller's transaction (Transactional Outbox).
-// The Relay picks up unpublished rows and ships them to the central event bus.
+// Storage implements the Outbox port by writing each event to the outbox_events table in the caller's transaction
+// (Transactional Outbox). The Relay picks up unpublished rows and ships them to the central event bus.
 type Storage struct {
 	clock      clock.Clock
 	repository *repository

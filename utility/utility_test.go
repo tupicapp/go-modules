@@ -5,7 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
-	"github.com/tupic/common-go/utility"
+	"github.com/tupicapp/common-go/utility"
 )
 
 type UtilitySuite struct{ suite.Suite }

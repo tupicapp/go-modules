@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/tupic/common-go/authorization"
+	"github.com/tupicapp/common-go/authorization"
 )
 
 type ctxUser struct{ ID string }
@@ -26,8 +26,8 @@ func TestContextWithUser_DoesNotMutateParent(t *testing.T) {
 	assert.Nil(t, authorization.UserFromContext[ctxUser](parent))
 }
 
-// TestUserFromContext_DistinctTypesDoNotCollide verifies that two services'
-// user types stored in the same context do not clobber each other.
+// TestUserFromContext_DistinctTypesDoNotCollide verifies that two services' user types stored in the same context do
+// not clobber each other.
 func TestUserFromContext_DistinctTypesDoNotCollide(t *testing.T) {
 	type otherUser struct{ Name string }
 

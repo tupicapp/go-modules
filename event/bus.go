@@ -5,12 +5,11 @@ import (
 	"sync"
 
 	"github.com/cockroachdb/errors"
-	"github.com/tupic/common-go/logger"
+	"github.com/tupicapp/common-go/logger"
 	"go.uber.org/zap"
 )
 
-// Bus is an in-memory synchronous event bus for domain events with
-// subscription and publishing capabilities.
+// Bus is an in-memory synchronous event bus for domain events with subscription and publishing capabilities.
 type Bus struct {
 	logger logger.Logger
 	mu     sync.RWMutex

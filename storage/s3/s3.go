@@ -1,5 +1,4 @@
-// Package s3 implements the storage contract with AWS S3 (or a compatible
-// API such as LocalStack/MinIO).
+// Package s3 implements the storage contract with AWS S3 (or a compatible API such as LocalStack/MinIO).
 package s3
 
 import (
@@ -14,12 +13,11 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/cockroachdb/errors"
-	"github.com/tupic/common-go/storage"
+	"github.com/tupicapp/common-go/storage"
 )
 
-// Config holds S3 connection settings. Services embed it in their config
-// structs; the mapstructure tags live here so every service shares the same
-// config schema.
+// Config holds S3 connection settings. Services embed it in their config structs; the mapstructure tags live here so
+// every service shares the same config schema.
 type Config struct {
 	Bucket       string `mapstructure:"bucket"`
 	AwsRegion    string `mapstructure:"aws_region"`
@@ -39,8 +37,8 @@ type S3 struct {
 	presign *awss3.PresignClient
 }
 
-// New creates an S3 backend. Uses static credentials if Key/Secret are set;
-// otherwise falls back to the default AWS credential chain.
+// New creates an S3 backend. Uses static credentials if Key/Secret are set; otherwise falls back to the default AWS
+// credential chain.
 func New(sc Config) (*S3, error) {
 	if sc.Bucket == "" {
 		return nil, errors.New("s3: bucket is required")

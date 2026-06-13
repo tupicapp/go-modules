@@ -7,12 +7,11 @@ import (
 	"gorm.io/datatypes"
 )
 
-// Event is one row in the outbox_events table. It holds a pending integration
-// event until the Relay publishes it to the broker and marks it published.
+// Event is one row in the outbox_events table. It holds a pending integration event until the Relay publishes it to the
+// broker and marks it published.
 //
-// FailedAt is set only for permanent failures (e.g. marshal errors). Transient
-// broker failures never touch the row — the event is simply retried on the
-// next poll tick. Error records the reason for ops inspection and replay.
+// FailedAt is set only for permanent failures (e.g. marshal errors). Transient broker failures never touch the row —
+// the event is simply retried on the next poll tick. Error records the reason for ops inspection and replay.
 type Event struct {
 	ID          int64          `gorm:"column:id;type:bigserial;primaryKey;autoIncrement"`
 	MessageID   uuid.UUID      `gorm:"column:message_id;type:char(36);not null;uniqueIndex"`
