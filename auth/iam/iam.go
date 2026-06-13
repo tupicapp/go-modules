@@ -22,7 +22,7 @@
 // that actually need accurate roles — admin routes — call EnsureRoles, which
 // fetches them from the userinfo endpoint when the actor has none. The HTTP
 // layer wires this as an explicit middleware on the admin route group (see
-// echox.EnsureAdminRoles); there is no hidden per-request flag.
+// echox.EnsureRoles); there is no hidden per-request flag.
 package iam
 
 import (

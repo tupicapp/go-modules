@@ -22,7 +22,7 @@ type AuthConfig[U any] struct {
 // anonymous request may proceed.
 //
 // The actor's realm roles are taken from the token as-is. Routes that need
-// them complete (admin routes) add EnsureAdminRoles to their group.
+// them complete (admin routes) add EnsureRoles to their group.
 func AuthMiddleware[U any](cfg AuthConfig[U]) labecho.MiddlewareFunc {
 	return func(next labecho.HandlerFunc) labecho.HandlerFunc {
 		return func(c *labecho.Context) error {
@@ -49,7 +49,7 @@ func AuthMiddleware[U any](cfg AuthConfig[U]) labecho.MiddlewareFunc {
 	}
 }
 
-// EnsureAdminRoles returns middleware that completes the authenticated actor's
+// EnsureRoles returns middleware that completes the authenticated actor's
 // realm roles before the route runs, fetching them from the identity provider
 // when the access token omitted them. Apply it to the admin route group,
 // ahead of RequireAdmin — it is the explicit declaration that this subtree
@@ -58,7 +58,7 @@ func AuthMiddleware[U any](cfg AuthConfig[U]) labecho.MiddlewareFunc {
 // ensure is typically the auth driver's EnsureRoles method. Failures fail
 // closed: the un-hydrated actor proceeds, so RequireAdmin denies access rather
 // than letting a userinfo outage 500 the request.
-func EnsureAdminRoles(
+func EnsureRoles(
 	ensure func(ctx context.Context, token string, actor *authorization.Actor) (*authorization.Actor, error),
 ) labecho.MiddlewareFunc {
 	return func(next labecho.HandlerFunc) labecho.HandlerFunc {
