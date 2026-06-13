@@ -40,6 +40,15 @@ func (s *ValidatorSuite) SetupSuite() {
 	s.signer = newJWTSigner(s.T())
 }
 
+// newValidator builds a validator with the given in-process HTTP client and
+// no JWKS cooldown (tests construct fresh validators per case).
+func (s *ValidatorSuite) newValidator(client *http.Client) *validator {
+	return newValidator(s.testConfig(), newOptions([]Option{
+		WithHTTPClient(client),
+		WithJWKSCooldown(0),
+	}))
+}
+
 func (s *ValidatorSuite) testConfig() Config {
 	return Config{
 		JwksURL:     s.serverURL + "/certs",
@@ -51,8 +60,7 @@ func (s *ValidatorSuite) testConfig() Config {
 func (s *ValidatorSuite) SetupTest() {
 	s.serverURL = "https://iam.test"
 
-	s.validator = newValidator(s.testConfig())
-	s.validator.client = httpClientForHandler(s.signer.jwksHandler())
+	s.validator = s.newValidator(httpClientForHandler(s.signer.jwksHandler()))
 }
 
 func (s *ValidatorSuite) TestValidToken_ReturnsClaims() {
@@ -156,8 +164,7 @@ func (s *ValidatorSuite) TestJWKSServerError_ReturnsError() {
 		w.WriteHeader(http.StatusInternalServerError)
 	})
 
-	v := newValidator(s.testConfig())
-	v.client = httpClientForHandler(handler)
+	v := s.newValidator(httpClientForHandler(handler))
 
 	c := Claims{Sub: uuid.New().String(), Iss: "https://iam.example.com/realms/tupic"}
 	token := s.signer.sign(&c)
@@ -173,8 +180,7 @@ func (s *ValidatorSuite) TestKeyCache_DoesNotRefetch() {
 		s.signer.jwksHandler()(w, r)
 	})
 
-	v := newValidator(s.testConfig())
-	v.client = httpClientForHandler(handler)
+	v := s.newValidator(httpClientForHandler(handler))
 
 	c := Claims{
 		Sub: uuid.New().String(),
@@ -215,4 +221,31 @@ func (s *ValidatorSuite) TestMissingSubject_ReturnsError() {
 	_, err := s.validator.validate(context.Background(), token)
 	s.Require().Error(err)
 	s.Contains(err.Error(), "subject is required")
+}
+
+// TestUnknownKid_CooldownPreventsRefetch verifies that repeated unknown key
+// IDs do not hammer the JWKS endpoint within the cooldown window.
+func (s *ValidatorSuite) TestUnknownKid_CooldownPreventsRefetch() {
+	requestCount := 0
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requestCount++
+		s.signer.jwksHandler()(w, r)
+	})
+
+	v := newValidator(s.testConfig(), newOptions([]Option{
+		WithHTTPClient(httpClientForHandler(handler)),
+		WithJWKSCooldown(time.Hour),
+	}))
+
+	otherSigner := newJWTSigner(s.T())
+	otherSigner.kid = "rotating-kid"
+	c := Claims{Sub: uuid.New().String(), Iss: "https://iam.example.com/realms/tupic"}
+	token := otherSigner.sign(&c)
+
+	for range 5 {
+		_, err := v.validate(context.Background(), token)
+		s.Require().Error(err)
+	}
+
+	s.Equal(1, requestCount, "JWKS endpoint must be fetched at most once within the cooldown")
 }

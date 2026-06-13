@@ -85,9 +85,7 @@ func (s *AuthenticatorSuite) SetupTest() {
 		ServiceName: "Assets",
 	}
 
-	s.auth = New[testUser](cfg, s.resolver)
-	s.auth.validator.client = httpClientForHandler(handler)
-	s.auth.userInfo.client = httpClientForHandler(handler)
+	s.auth = New(cfg, UserResolver[testUser](s.resolver), WithHTTPClient(httpClientForHandler(handler)))
 }
 
 func (s *AuthenticatorSuite) issuer() string { return s.serverURL + "/realms/tupic" }

@@ -42,19 +42,27 @@ type jwksResponse struct {
 
 // validator validates JWT tokens using RS256 and a JWKS endpoint.
 type validator struct {
-	cfg    Config
-	mu     sync.RWMutex
-	keys   map[string]*rsa.PublicKey
-	client *http.Client
+	cfg      Config
+	client   *http.Client
+	cooldown time.Duration
+
+	mu   sync.RWMutex
+	keys map[string]*rsa.PublicKey
+
+	// fetchMu serializes JWKS fetches; lastFetch rate-limits them so a flood
+	// of tokens with unknown key IDs cannot hammer the JWKS endpoint.
+	fetchMu   sync.Mutex
+	lastFetch time.Time
 }
 
 // newValidator creates and initializes a new validator instance with the
 // provided configuration.
-func newValidator(cfg Config) *validator {
+func newValidator(cfg Config, o options) *validator {
 	return &validator{
-		cfg:    cfg,
-		keys:   make(map[string]*rsa.PublicKey),
-		client: &http.Client{Timeout: 10 * time.Second},
+		cfg:      cfg,
+		client:   o.httpClient,
+		cooldown: o.jwksCooldown,
+		keys:     make(map[string]*rsa.PublicKey),
 	}
 }
 
@@ -109,8 +117,10 @@ func (v *validator) validate(ctx context.Context, tokenString string) (*Claims, 
 	return &c, nil
 }
 
-// getKey retrieves an RSA public key by kid from the cache, fetching keys from
-// JWKS endpoint if not cached.
+// getKey retrieves an RSA public key by kid from the cache, fetching keys
+// from the JWKS endpoint if not cached. Refetches are serialized and
+// rate-limited by the configured cooldown so unknown key IDs (key rotation,
+// or an attacker probing with bogus kids) cannot trigger a fetch per request.
 func (v *validator) getKey(ctx context.Context, kid string) (*rsa.PublicKey, error) {
 	v.mu.RLock()
 	key, ok := v.keys[kid]
@@ -118,9 +128,27 @@ func (v *validator) getKey(ctx context.Context, kid string) (*rsa.PublicKey, err
 	if ok {
 		return key, nil
 	}
+
+	v.fetchMu.Lock()
+	defer v.fetchMu.Unlock()
+
+	// Another request may have fetched while we waited for the lock.
+	v.mu.RLock()
+	key, ok = v.keys[kid]
+	v.mu.RUnlock()
+	if ok {
+		return key, nil
+	}
+
+	if time.Since(v.lastFetch) < v.cooldown {
+		return nil, errors.Newf("JWT key not found for kid: %s", kid)
+	}
+	v.lastFetch = time.Now()
+
 	if err := v.fetchKeys(ctx); err != nil {
 		return nil, errors.WithStack(err)
 	}
+
 	v.mu.RLock()
 	key, ok = v.keys[kid]
 	v.mu.RUnlock()

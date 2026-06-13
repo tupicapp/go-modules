@@ -8,8 +8,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
+	"github.com/tupic/common-go/auth/dummy"
 	"github.com/tupic/common-go/authorization"
-	"github.com/tupic/common-go/authx/dummy"
 )
 
 type testUser struct {

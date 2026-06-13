@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/cockroachdb/errors"
 )
@@ -15,7 +14,7 @@ type userInfoClient struct {
 	client   *http.Client
 }
 
-func newUserInfoClient(cfg Config) *userInfoClient {
+func newUserInfoClient(cfg Config, o options) *userInfoClient {
 	issuer := strings.TrimRight(strings.TrimSpace(cfg.Issuer), "/")
 	if issuer == "" {
 		return nil
@@ -23,7 +22,7 @@ func newUserInfoClient(cfg Config) *userInfoClient {
 
 	return &userInfoClient{
 		endpoint: issuer + "/protocol/openid-connect/userinfo",
-		client:   &http.Client{Timeout: 10 * time.Second},
+		client:   o.httpClient,
 	}
 }
 
