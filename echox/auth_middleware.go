@@ -14,11 +14,6 @@ type AuthConfig[U any] struct {
 	// Authenticate validates the bearer token and returns the actor and the
 	// service's user entity (typically the auth package's Authenticate).
 	Authenticate func(ctx context.Context, token string) (*authorization.Actor, *U, error)
-
-	// WithUser stores the resolved user in the request context using the
-	// service's own context key, so downstream handlers can fetch it with
-	// the service's UserFromContext.
-	WithUser func(ctx context.Context, u *U) context.Context
 }
 
 // AuthMiddleware resolves the actor and user from the Bearer token; the
@@ -45,7 +40,7 @@ func AuthMiddleware[U any](cfg AuthConfig[U]) labecho.MiddlewareFunc {
 			// Service-account tokens authenticate without a user — guard
 			// against storing a nil user in the request context.
 			if u != nil {
-				ctx = cfg.WithUser(ctx, u)
+				ctx = authorization.ContextWithUser(ctx, u)
 			}
 			c.SetRequest(c.Request().WithContext(ctx))
 
