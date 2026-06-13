@@ -1,11 +1,13 @@
 package echo
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/cockroachdb/errors"
 	labecho "github.com/labstack/echo/v5"
 	"github.com/stretchr/testify/suite"
 	"github.com/tupicapp/common-go/apperror"
@@ -79,5 +81,15 @@ func (s *ErrorHandlerSuite) TestHTTPErrors_IncludeMessage() {
 	}
 	for _, tc := range cases {
 		s.Equal(tc.message, s.body(s.invoke(tc.err))["message"])
+	}
+}
+
+func (s *ErrorHandlerSuite) TestCanceledContext_Returns499WithoutBody() {
+	// Both a bare and a wrapped context.Canceled must be treated as a client
+	// disconnect: 499, empty body, no Sentry capture.
+	for _, err := range []error{context.Canceled, errors.Wrap(context.Canceled, "reading body")} {
+		rec := s.invoke(err)
+		s.Equal(statusClientClosedRequest, rec.Code)
+		s.Empty(rec.Body.String())
 	}
 }

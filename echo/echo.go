@@ -3,6 +3,7 @@
 package echo
 
 import (
+	"context"
 	"net/http"
 	"strings"
 
@@ -13,6 +14,9 @@ import (
 	"github.com/tupicapp/common-go/logger"
 	"github.com/tupicapp/common-go/validator"
 )
+
+// statusClientClosedRequest mirrors nginx's 499: the client closed the connection before the server finished responding.
+const statusClientClosedRequest = 499
 
 // New creates a fully configured Echo instance with the standard middleware stack (Sentry, CORS, Recover, request
 // logging) plus any extra middlewares the service supplies (typically its authenticator).
@@ -37,6 +41,15 @@ func New(v validator.Validator, l logger.Logger, extra ...labecho.MiddlewareFunc
 // ErrorHandler maps apperror types to HTTP statuses and reports unexpected errors to Sentry.
 func ErrorHandler(c *labecho.Context, err error) {
 	if err == nil {
+		return
+	}
+
+	// A canceled request context means the client disconnected mid-request. This is not a server fault, so respond with
+	// 499 and skip Sentry to avoid noise.
+	if errors.Is(err, context.Canceled) {
+		if writeErr := c.NoContent(statusClientClosedRequest); writeErr != nil {
+			c.Logger().Debug("client closed request", "error", err)
+		}
 		return
 	}
 
