@@ -1,6 +1,7 @@
 package app_test
 
 import (
+	"context"
 	"errors"
 	"testing"
 
@@ -52,4 +53,31 @@ func (s *ConsoleSuite) TestRun_ReturnsStartErrorBeforeCommand() {
 
 	s.Require().Error(c.Run(nil))
 	s.False(ran)
+}
+
+func (s *ConsoleSuite) TestRun_ReturnsPanicAsError() {
+	c := app.NewConsoleApp(fx.NopLogger, s.cmd(func() error { panic("boom") }))
+
+	err := c.Run(nil)
+	s.Require().Error(err)
+	s.Contains(err.Error(), "console command panic: boom")
+}
+
+func (s *ConsoleSuite) TestRun_StopsAppAfterPanic() {
+	stopped := false
+	mods := fx.Options(
+		fx.NopLogger,
+		fx.Invoke(func(lc fx.Lifecycle) {
+			lc.Append(fx.Hook{
+				OnStop: func(context.Context) error {
+					stopped = true
+					return nil
+				},
+			})
+		}),
+	)
+	c := app.NewConsoleApp(mods, s.cmd(func() error { panic("boom") }))
+
+	s.Require().Error(c.Run(nil))
+	s.True(stopped)
 }
