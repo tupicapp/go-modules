@@ -4,12 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-`common-go` is the shared platform library for Tupic Go services (Go 1.26, module `github.com/tupicapp/common-go`). It is
+`go-modules` is the shared platform library for Tupic Go services (Go 1.26, module `github.com/tupicapp/go-modules`). It is
 **not a layered application** — there is no `main`, no service. Each top-level package is one self-contained platform
 concern (authentication, persistence, NATS messaging, storage, …) with its contract and implementation together.
 Services consume these packages; this repo never imports a service.
 
-Until the GitHub repo is published, services depend on it via `replace github.com/tupicapp/common-go => ../common-go`.
+Until the GitHub repo is published, services depend on it via `replace github.com/tupicapp/go-modules => ../go-modules`.
 
 ## Commands
 
@@ -81,6 +81,6 @@ gofumpt -w .                           # format (gofumpt, stricter than gofmt)
 ## Consumption pattern (how services use this)
 
 Services keep thin facade packages that re-export shared contracts via type aliases (`internal/domain/common`,
-`internal/application/port`, …) so their domain/application code never imports `common-go` directly — only the facade
+`internal/application/port`, …) so their domain/application code never imports `go-modules` directly — only the facade
 and `bootstrap/providers.go` reference it. Keep this library's public surface small and interface-first; a new
 capability is a new package with a contract, an implementation, and an fx `Module`.

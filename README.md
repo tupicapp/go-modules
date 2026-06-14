@@ -1,4 +1,4 @@
-# common-go
+# go-modules
 
 Shared platform library for Tupic Go services. Capability-based packages — not a layered application: each package is
 one platform concern with its contract and implementation together.
@@ -103,11 +103,11 @@ echo.AuthMiddleware(echo.AuthConfig[myservice.User]{
 ## Consumption pattern
 
 Services keep thin facade packages re-exporting shared contracts via type aliases (`internal/domain/common`,
-`internal/application/port`, …) so domain and application code never imports common-go directly, plus one
+`internal/application/port`, …) so domain and application code never imports go-modules directly, plus one
 `bootstrap/modules.go` mapping service config to the narrow shared config types (`logger.Config`, `nats.Config`,
 `persistence/config.Config`, …).
 
-Until the GitHub repo exists, services use `replace github.com/tupicapp/common-go => ../common-go`.
+Until the GitHub repo exists, services use `replace github.com/tupicapp/go-modules => ../go-modules`.
 
 ## License
 
