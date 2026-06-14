@@ -39,13 +39,11 @@ func (s *UtilitySuite) TestStringDeref_NilPointer_ReturnsEmpty() {
 }
 
 func (s *UtilitySuite) TestStringDeref_NonNilPointer_ReturnsValue() {
-	v := "hello"
-	s.Equal("hello", utility.StringDereference(&v))
+	s.Equal("hello", utility.StringDereference(new("hello")))
 }
 
 func (s *UtilitySuite) TestStringDeref_PointerToEmpty_ReturnsEmpty() {
-	v := ""
-	s.Equal("", utility.StringDereference(&v))
+	s.Equal("", utility.StringDereference(new("")))
 }
 
 func (s *UtilitySuite) TestParseUUID_Valid() {
