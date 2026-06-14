@@ -13,7 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/cockroachdb/errors"
-	"github.com/tupicapp/common-go/storage"
+	"github.com/tupicapp/go-modules/storage"
 )
 
 // Config holds S3 connection settings. Services embed it in their config structs; the mapstructure tags live here so

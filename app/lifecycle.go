@@ -3,7 +3,7 @@ package app
 import (
 	"context"
 
-	"github.com/tupicapp/common-go/logger"
+	"github.com/tupicapp/go-modules/logger"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )

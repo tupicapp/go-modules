@@ -10,10 +10,10 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	migratepostgres "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-	"github.com/tupicapp/common-go/logger"
-	pconfig "github.com/tupicapp/common-go/persistence/config"
-	"github.com/tupicapp/common-go/persistence/connector"
-	"github.com/tupicapp/common-go/persistence/migrator/contract"
+	"github.com/tupicapp/go-modules/logger"
+	pconfig "github.com/tupicapp/go-modules/persistence/config"
+	"github.com/tupicapp/go-modules/persistence/connector"
+	"github.com/tupicapp/go-modules/persistence/migrator/contract"
 	"go.uber.org/zap"
 )
 

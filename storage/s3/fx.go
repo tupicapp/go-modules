@@ -1,7 +1,7 @@
 package s3
 
 import (
-	"github.com/tupicapp/common-go/storage"
+	"github.com/tupicapp/go-modules/storage"
 	"go.uber.org/fx"
 )
 

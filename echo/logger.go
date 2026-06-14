@@ -6,7 +6,7 @@ import (
 	"time"
 
 	labecho "github.com/labstack/echo/v5"
-	"github.com/tupicapp/common-go/logger"
+	"github.com/tupicapp/go-modules/logger"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )

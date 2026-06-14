@@ -1,4 +1,4 @@
-module github.com/tupicapp/common-go
+module github.com/tupicapp/go-modules
 
 go 1.26.1
 

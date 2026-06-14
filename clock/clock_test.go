@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/tupicapp/common-go/clock"
+	"github.com/tupicapp/go-modules/clock"
 )
 
 type ClockSuite struct{ suite.Suite }

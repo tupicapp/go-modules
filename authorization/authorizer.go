@@ -4,7 +4,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/tupicapp/common-go/apperror"
+	"github.com/tupicapp/go-modules/apperror"
 )
 
 // Authorizer handles application layer authorization: it checks whether the given actor holds all the required

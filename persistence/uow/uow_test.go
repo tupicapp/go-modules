@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/tupicapp/common-go/persistence/uow"
+	"github.com/tupicapp/go-modules/persistence/uow"
 	"gorm.io/gorm"
 )
 

@@ -3,7 +3,7 @@ package nats
 import (
 	"github.com/cockroachdb/errors"
 	natsLib "github.com/nats-io/nats.go"
-	"github.com/tupicapp/common-go/logger"
+	"github.com/tupicapp/go-modules/logger"
 	"go.uber.org/zap"
 )
 

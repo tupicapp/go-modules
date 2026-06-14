@@ -5,8 +5,8 @@ import (
 
 	playgroundLib "github.com/go-playground/validator/v10"
 	"github.com/stretchr/testify/suite"
-	"github.com/tupicapp/common-go/apperror"
-	"github.com/tupicapp/common-go/validator"
+	"github.com/tupicapp/go-modules/apperror"
+	"github.com/tupicapp/go-modules/validator"
 )
 
 type signup struct {

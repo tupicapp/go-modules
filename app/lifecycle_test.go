@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/tupicapp/common-go/logger"
+	"github.com/tupicapp/go-modules/logger"
 	"go.uber.org/fx"
 )
 

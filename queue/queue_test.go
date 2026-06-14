@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/tupicapp/common-go/outbox"
-	"github.com/tupicapp/common-go/queue"
+	"github.com/tupicapp/go-modules/outbox"
+	"github.com/tupicapp/go-modules/queue"
 )
 
 // stubOutbox records the last event handed to Store and can be primed to fail.

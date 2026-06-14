@@ -5,7 +5,7 @@ import (
 	"context"
 
 	"github.com/cockroachdb/errors"
-	"github.com/tupicapp/common-go/outbox"
+	"github.com/tupicapp/go-modules/outbox"
 )
 
 // Task is the constraint for queueable point-to-point work units. Each task type declares its own subject and schema

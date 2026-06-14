@@ -5,7 +5,7 @@ import (
 	"sync"
 
 	"github.com/cockroachdb/errors"
-	"github.com/tupicapp/common-go/logger"
+	"github.com/tupicapp/go-modules/logger"
 	"go.uber.org/zap"
 )
 

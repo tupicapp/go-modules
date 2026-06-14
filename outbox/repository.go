@@ -6,7 +6,7 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/google/uuid"
-	"github.com/tupicapp/common-go/persistence/uow"
+	"github.com/tupicapp/go-modules/persistence/uow"
 	"gorm.io/gorm"
 )
 

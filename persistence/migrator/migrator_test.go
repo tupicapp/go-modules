@@ -4,10 +4,10 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/tupicapp/common-go/logger"
-	pconfig "github.com/tupicapp/common-go/persistence/config"
-	"github.com/tupicapp/common-go/persistence/connector"
-	"github.com/tupicapp/common-go/persistence/migrator"
+	"github.com/tupicapp/go-modules/logger"
+	pconfig "github.com/tupicapp/go-modules/persistence/config"
+	"github.com/tupicapp/go-modules/persistence/connector"
+	"github.com/tupicapp/go-modules/persistence/migrator"
 )
 
 type MigratorSuite struct{ suite.Suite }

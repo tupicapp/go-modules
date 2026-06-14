@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/tupicapp/common-go/testutil"
+	"github.com/tupicapp/go-modules/testutil"
 )
 
 type PtrSuite struct{ suite.Suite }

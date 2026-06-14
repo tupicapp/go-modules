@@ -6,7 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/suite"
-	"github.com/tupicapp/common-go/app"
+	"github.com/tupicapp/go-modules/app"
 	"go.uber.org/fx"
 )
 

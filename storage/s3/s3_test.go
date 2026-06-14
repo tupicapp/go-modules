@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/tupicapp/common-go/storage/s3"
+	"github.com/tupicapp/go-modules/storage/s3"
 )
 
 type S3Suite struct{ suite.Suite }

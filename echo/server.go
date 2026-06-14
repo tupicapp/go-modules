@@ -7,7 +7,7 @@ import (
 
 	"github.com/cockroachdb/errors"
 	labecho "github.com/labstack/echo/v5"
-	"github.com/tupicapp/common-go/logger"
+	"github.com/tupicapp/go-modules/logger"
 	"go.uber.org/zap"
 )
 

@@ -1,6 +1,6 @@
 package authorization
 
-import "github.com/tupicapp/common-go/apperror"
+import "github.com/tupicapp/go-modules/apperror"
 
 var (
 	ErrNotServiceActor = apperror.Authorization("This operation requires a service actor.")

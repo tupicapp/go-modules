@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/tupicapp/common-go/config"
+	"github.com/tupicapp/go-modules/config"
 )
 
 type sample struct {

@@ -6,8 +6,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/tupicapp/common-go/apperror"
-	"github.com/tupicapp/common-go/logger"
+	"github.com/tupicapp/go-modules/apperror"
+	"github.com/tupicapp/go-modules/logger"
 )
 
 func newTestRouter() *Router {

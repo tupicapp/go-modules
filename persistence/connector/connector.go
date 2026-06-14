@@ -9,8 +9,8 @@ import (
 
 	"github.com/cockroachdb/errors"
 	_ "github.com/lib/pq"
-	"github.com/tupicapp/common-go/logger"
-	pconfig "github.com/tupicapp/common-go/persistence/config"
+	"github.com/tupicapp/go-modules/logger"
+	pconfig "github.com/tupicapp/go-modules/persistence/config"
 	"go.uber.org/zap"
 	gormpg "gorm.io/driver/postgres"
 	"gorm.io/gorm"

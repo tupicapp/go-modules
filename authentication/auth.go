@@ -38,9 +38,9 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/google/uuid"
-	"github.com/tupicapp/common-go/authentication/dummy"
-	"github.com/tupicapp/common-go/authentication/iam"
-	"github.com/tupicapp/common-go/authorization"
+	"github.com/tupicapp/go-modules/authentication/dummy"
+	"github.com/tupicapp/go-modules/authentication/iam"
+	"github.com/tupicapp/go-modules/authorization"
 )
 
 // Authenticator validates a bearer token and returns the resolved actor and the service's user entity. The user is nil

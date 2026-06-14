@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/tupicapp/common-go/sentry"
+	"github.com/tupicapp/go-modules/sentry"
 	"go.uber.org/fx"
 )
 

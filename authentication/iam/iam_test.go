@@ -10,7 +10,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
-	"github.com/tupicapp/common-go/authorization"
+	"github.com/tupicapp/go-modules/authorization"
 )
 
 // testUser is the stand-in for a service's user entity.

@@ -5,8 +5,8 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/stretchr/testify/suite"
-	"github.com/tupicapp/common-go/apperror"
-	"github.com/tupicapp/common-go/authorization"
+	"github.com/tupicapp/go-modules/apperror"
+	"github.com/tupicapp/go-modules/authorization"
 )
 
 const (

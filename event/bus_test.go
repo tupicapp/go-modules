@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	"github.com/tupicapp/common-go/event"
-	"github.com/tupicapp/common-go/logger"
+	"github.com/tupicapp/go-modules/event"
+	"github.com/tupicapp/go-modules/logger"
 )
 
 type stubEvent struct{ name string }

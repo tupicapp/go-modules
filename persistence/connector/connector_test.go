@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	pconfig "github.com/tupicapp/common-go/persistence/config"
+	pconfig "github.com/tupicapp/go-modules/persistence/config"
 )
 
 type ConnectorSuite struct{ suite.Suite }

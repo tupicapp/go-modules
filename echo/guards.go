@@ -2,8 +2,8 @@ package echo
 
 import (
 	labecho "github.com/labstack/echo/v5"
-	"github.com/tupicapp/common-go/apperror"
-	"github.com/tupicapp/common-go/authorization"
+	"github.com/tupicapp/go-modules/apperror"
+	"github.com/tupicapp/go-modules/authorization"
 )
 
 // RequireUser returns 401 if no authenticated actor is in context.

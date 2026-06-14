@@ -7,8 +7,8 @@ import (
 
 	labecho "github.com/labstack/echo/v5"
 	"github.com/stretchr/testify/suite"
-	"github.com/tupicapp/common-go/echo"
-	"github.com/tupicapp/common-go/logger"
+	"github.com/tupicapp/go-modules/echo"
+	"github.com/tupicapp/go-modules/logger"
 )
 
 type LoggerMiddlewareSuite struct {

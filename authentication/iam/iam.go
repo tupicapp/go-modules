@@ -29,7 +29,7 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/google/uuid"
-	"github.com/tupicapp/common-go/authorization"
+	"github.com/tupicapp/go-modules/authorization"
 )
 
 // Config carries the IAM endpoints and the service identity used for admin role detection ("admin:<service>:*").

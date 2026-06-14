@@ -4,7 +4,7 @@ import (
 	"context"
 
 	labecho "github.com/labstack/echo/v5"
-	"github.com/tupicapp/common-go/authorization"
+	"github.com/tupicapp/go-modules/authorization"
 )
 
 // AuthConfig wires the shared auth middleware to a service. New fields can be added without breaking existing call

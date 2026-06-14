@@ -3,10 +3,10 @@ package persistence
 import (
 	"context"
 
-	"github.com/tupicapp/common-go/logger"
-	"github.com/tupicapp/common-go/persistence/connector"
-	"github.com/tupicapp/common-go/persistence/migrator"
-	"github.com/tupicapp/common-go/persistence/uow"
+	"github.com/tupicapp/go-modules/logger"
+	"github.com/tupicapp/go-modules/persistence/connector"
+	"github.com/tupicapp/go-modules/persistence/migrator"
+	"github.com/tupicapp/go-modules/persistence/uow"
 	"go.uber.org/fx"
 )
 

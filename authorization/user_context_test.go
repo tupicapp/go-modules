@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/tupicapp/common-go/authorization"
+	"github.com/tupicapp/go-modules/authorization"
 )
 
 type ctxUser struct{ ID string }

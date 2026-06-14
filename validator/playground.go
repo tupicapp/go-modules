@@ -7,7 +7,7 @@ import (
 
 	"github.com/cockroachdb/errors"
 	playgroundLib "github.com/go-playground/validator/v10"
-	"github.com/tupicapp/common-go/apperror"
+	"github.com/tupicapp/go-modules/apperror"
 )
 
 // localeRegexp matches locale codes in the form en-US (ISO 639-1 + ISO 3166-1 alpha-2).

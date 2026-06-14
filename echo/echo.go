@@ -10,9 +10,9 @@ import (
 	"github.com/cockroachdb/errors"
 	labecho "github.com/labstack/echo/v5"
 	echoMiddleware "github.com/labstack/echo/v5/middleware"
-	"github.com/tupicapp/common-go/apperror"
-	"github.com/tupicapp/common-go/logger"
-	"github.com/tupicapp/common-go/validator"
+	"github.com/tupicapp/go-modules/apperror"
+	"github.com/tupicapp/go-modules/logger"
+	"github.com/tupicapp/go-modules/validator"
 )
 
 // statusClientClosedRequest mirrors nginx's 499: the client closed the connection before the server finished responding.
