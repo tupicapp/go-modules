@@ -1,0 +1,42 @@
+name: Test
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: 'The GitHub Environment to bind for CI-scoped vars and secrets'
+        required: false
+        default: ci
+        type: string
+
+jobs:
+  check:
+    runs-on: ${{ vars.RUNNER_TYPE || 'ubuntu-latest' }}
+    environment: ${{ inputs.environment }}
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - run: go mod tidy
+      - run: git diff --exit-code go.mod go.sum
+      - run: go vet ./...
+
+  test-unit:
+    runs-on: ${{ vars.RUNNER_TYPE || 'ubuntu-latest' }}
+    environment: ${{ inputs.environment }}
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - run: go mod download
+      - run: go test -v ./...
