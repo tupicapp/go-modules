@@ -4,15 +4,15 @@ package outbox
 
 import "context"
 
-// OutboxEvent is the constraint for publishable integration events.
-type OutboxEvent interface {
+// IntegrationEvent is the constraint for publishable integration events.
+type IntegrationEvent interface {
 	Subject() string
 	Version() string
 }
 
 // Outbox stores integration events to the outbox for at-least-once delivery to the central message bus.
 type Outbox interface {
-	Store(ctx context.Context, e OutboxEvent) error
+	Store(ctx context.Context, e IntegrationEvent) error
 }
 
 // Config carries the relay's publishing identity. SubjectPrefix prefixes every published subject; Source identifies the

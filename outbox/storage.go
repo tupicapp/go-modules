@@ -21,7 +21,7 @@ func NewStorage(c clock.Clock, db *gorm.DB) *Storage {
 	return &Storage{clock: c, repository: newRepository(db)}
 }
 
-func (p *Storage) Store(ctx context.Context, e OutboxEvent) error {
+func (p *Storage) Store(ctx context.Context, e IntegrationEvent) error {
 	payload, err := json.Marshal(e)
 	if err != nil {
 		return errors.Wrapf(err, "outbox storage: marshal %q", e.Subject())

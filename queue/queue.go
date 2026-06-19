@@ -21,7 +21,7 @@ type Queue interface {
 }
 
 // OutboxQueue implements Queue by reusing the outbox publisher: a Task has the same Subject()/Version() shape as an
-// OutboxEvent, so the outbox row layout already fits. The relay routes by subject (events.* vs queue.*) to the
+// IntegrationEvent, so the outbox row layout already fits. The relay routes by subject (events.* vs queue.*) to the
 // appropriate JetStream stream.
 type OutboxQueue struct {
 	publisher outbox.Outbox
@@ -37,7 +37,7 @@ func (q *OutboxQueue) Enqueue(ctx context.Context, t Task) error {
 	return errors.WithStack(q.publisher.Store(ctx, taskAsEvent{t}))
 }
 
-// taskAsEvent adapts a Task to the OutboxEvent shape. Both interfaces have identical methods; the wrapper is structural
+// taskAsEvent adapts a Task to the IntegrationEvent shape. Both interfaces have identical methods; the wrapper is structural
 // plumbing only.
 type taskAsEvent struct{ Task }
 

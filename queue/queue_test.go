@@ -12,11 +12,11 @@ import (
 
 // stubOutbox records the last event handed to Store and can be primed to fail.
 type stubOutbox struct {
-	stored outbox.OutboxEvent
+	stored outbox.IntegrationEvent
 	err    error
 }
 
-func (o *stubOutbox) Store(_ context.Context, e outbox.OutboxEvent) error {
+func (o *stubOutbox) Store(_ context.Context, e outbox.IntegrationEvent) error {
 	o.stored = e
 	return o.err
 }
