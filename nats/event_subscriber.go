@@ -57,7 +57,7 @@ func NewEventSubscriber(
 
 func (s *EventSubscriber) Start(_ context.Context) error {
 	for _, subject := range s.handler.Subjects() {
-		if strings.HasPrefix(subject, "queue.") {
+		if strings.HasPrefix(subject, "queues.") {
 			continue
 		}
 		durable := durableNameFor(s.appSlug, subject)

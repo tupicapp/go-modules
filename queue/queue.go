@@ -21,7 +21,7 @@ type Queue interface {
 }
 
 // OutboxQueue implements Queue by reusing the outbox publisher: a Task has the same Subject()/Version() shape as an
-// IntegrationEvent, so the outbox row layout already fits. The relay routes by subject (events.* vs queue.*) to the
+// IntegrationEvent, so the outbox row layout already fits. The relay routes by subject (events.* vs queues.*) to the
 // appropriate JetStream stream.
 type OutboxQueue struct {
 	publisher outbox.Outbox

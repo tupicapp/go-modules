@@ -46,7 +46,7 @@ var backoffSchedule = []time.Duration{
 	72 * time.Hour,
 }
 
-// QueueSubscriber subscribes to queue.* subjects and dispatches each task to the Router. Terminal failures (apperror)
+// QueueSubscriber subscribes to queues.* subjects and dispatches each task to the Router. Terminal failures (apperror)
 // and exhausted MaxDeliver are written to the failed_messages DLQ and Term'd; transient failures are Nak'd for
 // JetStream retry.
 type QueueSubscriber struct {
@@ -88,11 +88,11 @@ func NewQueueSubscriber(
 	}, nil
 }
 
-// Start subscribes to every registered queue.* subject. Each subject gets its own durable consumer so JetStream
+// Start subscribes to every registered queues.* subject. Each subject gets its own durable consumer so JetStream
 // load-balances across replicas naturally.
 func (w *QueueSubscriber) Start(_ context.Context) error {
 	for _, subject := range w.router.Subjects() {
-		if !strings.HasPrefix(subject, "queue.") {
+		if !strings.HasPrefix(subject, "queues.") {
 			continue
 		}
 		wireSubject := w.prefix + "." + subject

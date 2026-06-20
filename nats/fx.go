@@ -14,7 +14,7 @@ var ConnectionModule = fx.Options(
 	fx.Invoke(RegisterConnectionLifecycle),
 )
 
-// SubscriberModule wires the shared Router, the EventSubscriber (non-queue.* subjects), and exposes the Router as a
+// SubscriberModule wires the shared Router, the EventSubscriber (non-queues.* subjects), and exposes the Router as a
 // MessageHandlerRegisterer.
 var SubscriberModule = fx.Options(
 	fx.Provide(
@@ -25,7 +25,7 @@ var SubscriberModule = fx.Options(
 	fx.Invoke(RegisterSubscriberLifecycle),
 )
 
-// WorkerModule wires the QueueSubscriber (queue.* subjects). Requires the shared Router already provided by
+// WorkerModule wires the QueueSubscriber (queues.* subjects). Requires the shared Router already provided by
 // SubscriberModule.
 var WorkerModule = fx.Options(
 	fx.Provide(NewQueueSubscriber),
