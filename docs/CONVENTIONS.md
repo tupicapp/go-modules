@@ -54,6 +54,48 @@ transaction, using `ActorIDFrom(cmd.Actor)` / `ActorTypeFrom(cmd.Actor)`.
 
 ---
 
+### Wiring a go-modules adapter
+
+go-modules `concrete/*` packages export plain constructors and do **not** import `fx`. The service owns
+the wiring in `internal/bootstrap/modules.go` — one `fx`-typed var per adapter that pairs (when needed)
+the config adapter with the constructors, the contract binding, and the lifecycle registration. This is
+the one place `fx` knowledge about go-modules lives.
+
+```go
+// Contract binding only — bind the implementation to the contract the graph consumes:
+var ClockModule = fx.Provide(fx.Annotate(system_clock.NewSystem, fx.As(new(clock.Clock))))
+
+// Config + binding:
+var S3StorageModule = fx.Options(
+    fx.Provide(func(c *config.Config) s3.Config { return c.S3 }),
+    fx.Provide(fx.Annotate(s3.New, fx.As(new(storage.Storage)))),
+)
+
+// Config + constructors + lifecycle (adapters expose plain Start/Stop methods):
+var SQSModule = fx.Options(
+    fx.Provide(func(c *config.Config) sqs.Config { return c.SQS }),
+    fx.Provide(osrouter.NewRouter, sqs.NewClient, sqs.NewPoller /* + interface bindings */),
+    fx.Invoke(func(lc fx.Lifecycle, p *sqs.Poller) {
+        lc.Append(fx.Hook{OnStart: p.Start, OnStop: p.Stop})
+    }),
+)
+```
+
+Rules:
+
+1. **Bindings, lifecycle, and value-group assembly are the service's job** — never the library's.
+   A generic adapter (`echo.NewEcho[U]`, `iam.New[U]`) is instantiated with the service's concrete user
+   type here.
+2. **Lifecycle order is the dependency graph** — fx starts in topological order and stops in reverse, so
+   register each adapter's hook in the module that provides it; do not hand-order hooks.
+3. **Value groups** (e.g. worker subscriptions) are collected with an `fx.In` param struct in bootstrap;
+   the shared group-tag constant lives next to the plain `Activate`/`NewBus` function in go-modules so
+   producer and consumer agree.
+4. **Validate the graph** — `internal/bootstrap` has a `fx.ValidateApp` test over every composition;
+   add new compositions to it so missing/duplicate providers fail in CI, not at startup.
+
+---
+
 ### New HTTP Handler
 
 Routes are registered in `internal/interface/http/routes.go`. Audience → package → middleware:

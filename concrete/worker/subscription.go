@@ -7,6 +7,11 @@ import (
 	"github.com/cockroachdb/errors"
 )
 
+// SubscriptionTag is the fx value-group tag a service tags its Subscriptions with so its
+// activation wiring can collect them. It lives here (not in fx wiring) so the producing and
+// consuming sides agree on the group name; the activation invoke itself is owned by the service.
+const SubscriptionTag = `group:"messaging_subscriptions"`
+
 // Subscription is a named bundle of message-handler registrations. A service splits its
 // registrations into named subscriptions so a worker can run a subset
 // (`work --subscriptions=a,b`); with none selected it runs all. Grouping lets each

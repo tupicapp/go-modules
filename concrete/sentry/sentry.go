@@ -2,12 +2,10 @@
 package sentry
 
 import (
-	"context"
 	"time"
 
 	"github.com/cockroachdb/errors"
 	"github.com/getsentry/sentry-go"
-	"go.uber.org/fx"
 )
 
 // Config carries the Sentry client settings supplied by the service.
@@ -18,9 +16,9 @@ type Config struct {
 	Debug       bool
 }
 
-// Init initializes the Sentry error tracking SDK and registers a lifecycle hook to flush events on application
-// shutdown. Returns nil if DSN is empty, skipping initialization.
-func Init(lc fx.Lifecycle, cfg Config) error {
+// Init initializes the Sentry error tracking SDK. Returns nil if DSN is empty, skipping initialization. The service
+// owns the shutdown flush by registering Close on its app lifecycle.
+func Init(cfg Config) error {
 	if cfg.DSN == "" {
 		return nil
 	}
@@ -34,20 +32,14 @@ func Init(lc fx.Lifecycle, cfg Config) error {
 		return errors.Wrap(err, "sentry: initialization failed")
 	}
 
-	lc.Append(fx.Hook{
-		OnStop: func(c context.Context) error {
-			sentry.Flush(2 * time.Second)
-			return nil
-		},
-	})
-
 	return nil
 }
 
-// Module invokes Init; requires a sentry.Config in the graph.
-var Module = fx.Options(
-	fx.Invoke(Init),
-)
+// Close flushes buffered events; the service registers it as a shutdown hook. It is a no-op when Sentry was never
+// initialized (empty DSN), so it is always safe to register.
+func Close() {
+	sentry.Flush(2 * time.Second)
+}
 
 // Capture reports err to Sentry on a cloned hub with the given tags. It is a no-op when err is nil or Sentry was not
 // initialized (no DSN). Use at transport boundaries to report errors no handler dealt with, mirroring the HTTP edge.
