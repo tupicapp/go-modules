@@ -8,7 +8,7 @@ import (
 	"github.com/cockroachdb/errors"
 	playgroundLib "github.com/go-playground/validator/v10"
 	"github.com/tupicapp/go-modules/contract/validator"
-	"github.com/tupicapp/go-modules/kernel/apperror"
+	"github.com/tupicapp/go-modules/shared/apperror"
 )
 
 // localeRegexp matches locale codes in the form en-US (ISO 639-1 + ISO 3166-1 alpha-2).
@@ -110,6 +110,8 @@ func isNumericKind(k reflect.Kind) bool {
 		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
 		reflect.Float32, reflect.Float64:
 		return true
+	default:
+		panic("unhandled default case")
 	}
 	return false
 }

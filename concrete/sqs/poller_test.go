@@ -13,7 +13,7 @@ import (
 	"github.com/tupicapp/go-modules/concrete/noop_logger"
 	osrouter "github.com/tupicapp/go-modules/concrete/objectstorage_router"
 	objectstorage2 "github.com/tupicapp/go-modules/contract/objectstorage"
-	"github.com/tupicapp/go-modules/kernel/apperror"
+	"github.com/tupicapp/go-modules/shared/apperror"
 )
 
 // fakeAPI records DeleteMessage calls so ack/keep decisions can be asserted

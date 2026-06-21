@@ -15,7 +15,7 @@ import (
 	"github.com/tupicapp/go-modules/contract/clock"
 	"github.com/tupicapp/go-modules/contract/logger"
 	messaging2 "github.com/tupicapp/go-modules/contract/messaging"
-	"github.com/tupicapp/go-modules/kernel/apperror"
+	"github.com/tupicapp/go-modules/shared/apperror"
 	"go.uber.org/zap"
 	"gorm.io/datatypes"
 	"gorm.io/gorm"

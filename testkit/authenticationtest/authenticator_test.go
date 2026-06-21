@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/tupicapp/go-modules/kernel/authorization"
+	"github.com/tupicapp/go-modules/shared/authorization"
 	"github.com/tupicapp/go-modules/testkit/authenticationtest"
 )
 

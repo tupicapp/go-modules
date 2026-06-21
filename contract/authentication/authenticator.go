@@ -3,7 +3,7 @@ package authentication
 import (
 	"context"
 
-	"github.com/tupicapp/go-modules/kernel/authorization"
+	"github.com/tupicapp/go-modules/shared/authorization"
 )
 
 // Authenticator validates a bearer token and returns the resolved actor and the service's user entity. The user is nil

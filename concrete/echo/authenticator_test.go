@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 	labecho "github.com/labstack/echo/v5"
 	"github.com/stretchr/testify/suite"
-	"github.com/tupicapp/go-modules/kernel/authorization"
+	"github.com/tupicapp/go-modules/shared/authorization"
 )
 
 // fakeUser is the service user entity resolved alongside the actor.

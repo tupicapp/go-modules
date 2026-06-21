@@ -1,6 +1,6 @@
 package authorization
 
-import authz "github.com/tupicapp/go-modules/kernel/authorization"
+import authz "github.com/tupicapp/go-modules/shared/authorization"
 
 // Authorizer handles application layer authorization.
 // It checks whether the given actor holds all the required permissions.

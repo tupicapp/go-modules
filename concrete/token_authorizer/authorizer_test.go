@@ -6,8 +6,8 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/stretchr/testify/suite"
 	concrete "github.com/tupicapp/go-modules/concrete/token_authorizer"
-	"github.com/tupicapp/go-modules/kernel/apperror"
-	contract "github.com/tupicapp/go-modules/kernel/authorization"
+	"github.com/tupicapp/go-modules/shared/apperror"
+	contract "github.com/tupicapp/go-modules/shared/authorization"
 )
 
 const (

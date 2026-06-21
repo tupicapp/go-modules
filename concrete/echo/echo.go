@@ -12,7 +12,7 @@ import (
 	"github.com/tupicapp/go-modules/contract/authentication"
 	"github.com/tupicapp/go-modules/contract/logger"
 	"github.com/tupicapp/go-modules/contract/validator"
-	"github.com/tupicapp/go-modules/kernel/apperror"
+	"github.com/tupicapp/go-modules/shared/apperror"
 )
 
 // statusClientClosedRequest mirrors nginx's 499: the client closed the connection before the server response.

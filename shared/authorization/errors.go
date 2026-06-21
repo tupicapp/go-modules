@@ -1,7 +1,7 @@
 package authorization
 
 import (
-	"github.com/tupicapp/go-modules/kernel/apperror"
+	"github.com/tupicapp/go-modules/shared/apperror"
 )
 
 var (

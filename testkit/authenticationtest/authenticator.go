@@ -10,7 +10,7 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/google/uuid"
 
-	"github.com/tupicapp/go-modules/kernel/authorization"
+	"github.com/tupicapp/go-modules/shared/authorization"
 )
 
 // Authenticator decodes the bearer token as a base64-encoded JSON Actor and resolves the user via lookup. The lookup

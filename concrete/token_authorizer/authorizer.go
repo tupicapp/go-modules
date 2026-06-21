@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	contract "github.com/tupicapp/go-modules/contract/authorization"
-	authz "github.com/tupicapp/go-modules/kernel/authorization"
+	authz "github.com/tupicapp/go-modules/shared/authorization"
 )
 
 // defaultScopes are always present when a user authenticates via the standard sign-in flow.

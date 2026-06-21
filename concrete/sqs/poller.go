@@ -14,7 +14,7 @@ import (
 	"github.com/tupicapp/go-modules/concrete/sentry"
 	"github.com/tupicapp/go-modules/contract/logger"
 	objectstorage2 "github.com/tupicapp/go-modules/contract/objectstorage"
-	"github.com/tupicapp/go-modules/kernel/apperror"
+	"github.com/tupicapp/go-modules/shared/apperror"
 	"go.uber.org/zap"
 )
 

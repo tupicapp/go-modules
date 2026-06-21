@@ -5,7 +5,7 @@ import (
 
 	base "github.com/labstack/echo/v5"
 	"github.com/tupicapp/go-modules/contract/authentication"
-	"github.com/tupicapp/go-modules/kernel/authorization"
+	"github.com/tupicapp/go-modules/shared/authorization"
 )
 
 func Authenticator[U any](a authentication.Authenticator[U]) base.MiddlewareFunc {

@@ -8,7 +8,7 @@ import (
 
 	"github.com/tupicapp/go-modules/concrete/noop_logger"
 	"github.com/tupicapp/go-modules/contract/messaging"
-	"github.com/tupicapp/go-modules/kernel/apperror"
+	"github.com/tupicapp/go-modules/shared/apperror"
 )
 
 func newTestRouter() *Router {

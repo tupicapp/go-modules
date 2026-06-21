@@ -10,7 +10,7 @@ import (
 	"github.com/cockroachdb/errors"
 	labecho "github.com/labstack/echo/v5"
 	"github.com/stretchr/testify/suite"
-	"github.com/tupicapp/go-modules/kernel/apperror"
+	"github.com/tupicapp/go-modules/shared/apperror"
 )
 
 type ErrorHandlerSuite struct {
