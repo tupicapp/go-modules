@@ -1,6 +1,6 @@
 # go-modules
 
-Shared platform library for Tupic Go services. Capability-based packages — not a layered application: each package is
+Shared platform library for Go services. Capability-based packages — not a layered application: each package is
 one platform concern with its contract and implementation together.
 
 | Package | Concern |
@@ -24,6 +24,16 @@ one platform concern with its contract and implementation together.
 `config`, `echo`, `nats`, and `sentry` wrap a same-named third-party package (labstack `echo`, `nats.go`, `sentry-go`,
 config loading) that services also import in the same files. Where both appear in one file, alias the upstream import
 (`labecho`, `natslib`); the wrapper keeps the clean name.
+
+## Service architecture docs
+
+`docs/` holds the **reference architecture for every data intensive service** built on this library —
+shared so it lives in one place instead of being copied into each repo:
+
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — layering, application flows, events/outbox, testing, blast radius
+- [docs/CONVENTIONS.md](docs/CONVENTIONS.md) — coding patterns, test wiring, code style, workflow
+
+Each service keeps only its own `docs/DOMAIN.md` and `docs/SERVICE.md` (flows, endpoints, deviations).
 
 ## Auth architecture
 
