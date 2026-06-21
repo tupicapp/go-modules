@@ -7,10 +7,10 @@ library, not a framework: no package imports `fx`** except the runner in `concre
 ## Four trees
 
 ```
-shared/<vocab>/             # cross-cutting value/error types — the foundation, depends on nothing
-contract/<capability>/      # ports: an interface (+ its param/return types)
+shared/<vocab>/             # cross-cutting value/error types — the foundation, depends on nothing, no fx
+contract/<capability>/      # ports: an interface (+ its param/return types), no fx
 concrete/<impl>/            # production adapters, named by implementation; plain constructors, no fx
-testkit/<capability>test/   # test doubles — never production, never self-binding
+testkit/<capability>test/   # test doubles — never production, no fx
 ```
 
 Dependency direction is strictly inward: `shared ← contract ← concrete` (and `← testkit`). A cycle

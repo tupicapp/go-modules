@@ -111,9 +111,8 @@ func isNumericKind(k reflect.Kind) bool {
 		reflect.Float32, reflect.Float64:
 		return true
 	default:
-		panic("unhandled default case")
+		return false
 	}
-	return false
 }
 
 var _ validator.Validator = (*Playground)(nil)

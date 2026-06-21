@@ -9,9 +9,9 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	awsconfig "github.com/aws/aws-sdk-go-v2/config"
+	awsConfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
-	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
+	awsS3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/cockroachdb/errors"
 	"github.com/tupicapp/go-modules/contract/storage"
 )
@@ -33,8 +33,8 @@ type S3 struct {
 	bucket  string
 	region  string
 	baseURL string
-	client  *awss3.Client
-	presign *awss3.PresignClient
+	client  *awsS3.Client
+	presign *awsS3.PresignClient
 }
 
 // New creates an S3 backend. Uses static credentials if Key/Secret are set; otherwise falls back to the default AWS
@@ -47,50 +47,50 @@ func New(sc Config) (*S3, error) {
 		return nil, errors.New("s3: aws_region is required")
 	}
 
-	opts := []func(*awsconfig.LoadOptions) error{
-		awsconfig.WithRegion(sc.AwsRegion),
+	opts := []func(*awsConfig.LoadOptions) error{
+		awsConfig.WithRegion(sc.AwsRegion),
 	}
 	if sc.Key != "" && sc.Secret != "" {
-		opts = append(opts, awsconfig.WithCredentialsProvider(
+		opts = append(opts, awsConfig.WithCredentialsProvider(
 			credentials.NewStaticCredentialsProvider(sc.Key, sc.Secret, ""),
 		))
 	}
 
-	awsCfg, err := awsconfig.LoadDefaultConfig(context.Background(), opts...)
+	awsCfg, err := awsConfig.LoadDefaultConfig(context.Background(), opts...)
 	if err != nil {
 		return nil, errors.Wrap(err, "s3: load aws config")
 	}
 
-	var clientOpts []func(*awss3.Options)
+	var clientOpts []func(*awsS3.Options)
 	if sc.Endpoint != "" {
 		endpoint := sc.Endpoint
-		clientOpts = append(clientOpts, func(o *awss3.Options) {
+		clientOpts = append(clientOpts, func(o *awsS3.Options) {
 			o.BaseEndpoint = aws.String(endpoint)
 		})
 	}
 	if sc.UsePathStyle {
-		clientOpts = append(clientOpts, func(o *awss3.Options) {
+		clientOpts = append(clientOpts, func(o *awsS3.Options) {
 			o.UsePathStyle = true
 		})
 	}
 
-	client := awss3.NewFromConfig(awsCfg, clientOpts...)
+	client := awsS3.NewFromConfig(awsCfg, clientOpts...)
 
 	return &S3{
 		bucket:  sc.Bucket,
 		region:  sc.AwsRegion,
 		baseURL: sc.BaseURL,
 		client:  client,
-		presign: awss3.NewPresignClient(client),
+		presign: awsS3.NewPresignClient(client),
 	}, nil
 }
 
 // UploadURL returns a presigned PUT URL for direct client upload to S3.
 func (s *S3) UploadURL(ctx context.Context, path string, expiry time.Duration) (string, error) {
-	req, err := s.presign.PresignPutObject(ctx, &awss3.PutObjectInput{
+	req, err := s.presign.PresignPutObject(ctx, &awsS3.PutObjectInput{
 		Bucket: aws.String(s.bucket),
 		Key:    aws.String(path),
-	}, awss3.WithPresignExpires(expiry))
+	}, awsS3.WithPresignExpires(expiry))
 	if err != nil {
 		return "", errors.Wrap(err, "s3: presign put object")
 	}
@@ -99,10 +99,10 @@ func (s *S3) UploadURL(ctx context.Context, path string, expiry time.Duration) (
 
 // DownloadURL returns a presigned GET URL for direct client download from S3.
 func (s *S3) DownloadURL(ctx context.Context, path string, expiry time.Duration) (string, error) {
-	req, err := s.presign.PresignGetObject(ctx, &awss3.GetObjectInput{
+	req, err := s.presign.PresignGetObject(ctx, &awsS3.GetObjectInput{
 		Bucket: aws.String(s.bucket),
 		Key:    aws.String(path),
-	}, awss3.WithPresignExpires(expiry))
+	}, awsS3.WithPresignExpires(expiry))
 	if err != nil {
 		return "", errors.Wrap(err, "s3: presign get object")
 	}
@@ -111,7 +111,7 @@ func (s *S3) DownloadURL(ctx context.Context, path string, expiry time.Duration)
 
 // Delete removes an object from the bucket.
 func (s *S3) Delete(ctx context.Context, path string) error {
-	_, err := s.client.DeleteObject(ctx, &awss3.DeleteObjectInput{
+	_, err := s.client.DeleteObject(ctx, &awsS3.DeleteObjectInput{
 		Bucket: aws.String(s.bucket),
 		Key:    aws.String(path),
 	})
@@ -121,14 +121,14 @@ func (s *S3) Delete(ctx context.Context, path string) error {
 // Move relocates an object within the bucket via server-side copy + delete.
 func (s *S3) Move(ctx context.Context, src, dst string) error {
 	copySource := url.PathEscape(s.bucket) + "/" + url.PathEscape(src)
-	if _, err := s.client.CopyObject(ctx, &awss3.CopyObjectInput{
+	if _, err := s.client.CopyObject(ctx, &awsS3.CopyObjectInput{
 		Bucket:     aws.String(s.bucket),
 		CopySource: aws.String(copySource),
 		Key:        aws.String(dst),
 	}); err != nil {
 		return errors.Wrap(err, "s3: copy object")
 	}
-	if _, err := s.client.HeadObject(ctx, &awss3.HeadObjectInput{
+	if _, err := s.client.HeadObject(ctx, &awsS3.HeadObjectInput{
 		Bucket: aws.String(s.bucket),
 		Key:    aws.String(dst),
 	}); err != nil {
@@ -136,7 +136,7 @@ func (s *S3) Move(ctx context.Context, src, dst string) error {
 			return errors.Wrap(errors.CombineErrors(err, streamErr), "s3: verify copied object")
 		}
 	}
-	if _, err := s.client.DeleteObject(ctx, &awss3.DeleteObjectInput{
+	if _, err := s.client.DeleteObject(ctx, &awsS3.DeleteObjectInput{
 		Bucket: aws.String(s.bucket),
 		Key:    aws.String(src),
 	}); err != nil {
@@ -146,7 +146,7 @@ func (s *S3) Move(ctx context.Context, src, dst string) error {
 }
 
 func (s *S3) copyObjectByStreaming(ctx context.Context, src, dst string) (err error) {
-	get, err := s.client.GetObject(ctx, &awss3.GetObjectInput{
+	get, err := s.client.GetObject(ctx, &awsS3.GetObjectInput{
 		Bucket: aws.String(s.bucket),
 		Key:    aws.String(src),
 	})
@@ -159,7 +159,7 @@ func (s *S3) copyObjectByStreaming(ctx context.Context, src, dst string) (err er
 		return errors.Wrap(err, "s3: read source object")
 	}
 
-	if _, err = s.client.PutObject(ctx, &awss3.PutObjectInput{
+	if _, err = s.client.PutObject(ctx, &awsS3.PutObjectInput{
 		Bucket: aws.String(s.bucket),
 		Key:    aws.String(dst),
 		Body:   bytes.NewReader(body),
