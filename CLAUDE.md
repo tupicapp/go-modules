@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-`go-modules` is the shared platform library for Tupic Go services (Go 1.26, module `github.com/tupicapp/go-modules`). It is
+`go-modules` is the shared platform library for Go services (Go 1.26, module `github.com/tupicapp/go-modules`). It is
 **not a layered application** — there is no `main`, no service. Each top-level package is one self-contained platform
 concern (authentication, persistence, NATS messaging, storage, …) with its contract and implementation together.
 Services consume these packages; this repo never imports a service.
