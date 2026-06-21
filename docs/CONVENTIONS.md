@@ -56,10 +56,9 @@ transaction, using `ActorIDFrom(cmd.Actor)` / `ActorTypeFrom(cmd.Actor)`.
 
 ### Wiring a go-modules adapter
 
-go-modules `concrete/*` packages export plain constructors and do **not** import `fx`. The service owns
-the wiring in `internal/bootstrap/modules.go` — one `fx`-typed var per adapter that pairs (when needed)
-the config adapter with the constructors, the contract binding, and the lifecycle registration. This is
-the one place `fx` knowledge about go-modules lives.
+go-modules `concrete/*` export plain constructors and import no `fx`. The service owns wiring in
+`internal/bootstrap/modules.go` — one `fx` var per adapter pairing (as needed) config, constructors,
+contract binding, and lifecycle. This is the only place `fx` knowledge of go-modules lives.
 
 ```go
 // Contract binding only — bind the implementation to the contract the graph consumes:
@@ -91,8 +90,8 @@ Rules:
 3. **Value groups** (e.g. worker subscriptions) are collected with an `fx.In` param struct in bootstrap;
    the shared group-tag constant lives next to the plain `Activate`/`NewBus` function in go-modules so
    producer and consumer agree.
-4. **Validate the graph** — `internal/bootstrap` has a `fx.ValidateApp` test over every composition;
-   add new compositions to it so missing/duplicate providers fail in CI, not at startup.
+4. **Validate the graph** — a `fx.ValidateApp` test over each composition catches missing/duplicate
+   providers in CI instead of at startup.
 
 ---
 

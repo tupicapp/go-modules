@@ -135,14 +135,13 @@ Platform-wide; the IAM service (Keycloak) issues JWTs.
 
 ### General
 
-- **go-modules is a library, not a framework.** Its `concrete/*` packages export plain constructors and
-  do **not** import `fx` — the shared fx runner in `concrete/app` is the sole exception. The composition
-  root (`internal/bootstrap`) owns every DI decision: which contract each implementation satisfies
-  (`fx.As`), where each adapter registers its start/stop lifecycle hook, and how value groups are
-  assembled. See [Wiring a go-modules adapter](CONVENTIONS.md#wiring-a-go-modules-adapter).
-- Service-internal packages (use cases, handlers, repositories) keep their own wiring in a local `fx.go`.
-  Prefer plain constructor signatures; avoid `fx.In`/`fx.Out` (the composition root may use an `fx.In`
-  param struct only where a value group must be collected).
+- **go-modules is a library, not a framework.** `concrete/*` export plain constructors and import no `fx`
+  (the runner in `concrete/app` is the sole exception). The composition root (`internal/bootstrap`) owns
+  every DI decision — contract bindings (`fx.As`), lifecycle hooks, value-group assembly. See
+  [Wiring a go-modules adapter](CONVENTIONS.md#wiring-a-go-modules-adapter).
+- Service-internal packages (use cases, handlers, repositories) keep wiring in a local `fx.go`. Prefer
+  plain constructor signatures; avoid `fx.In`/`fx.Out` (bootstrap may use an `fx.In` struct only to collect
+  a value group).
 - Wrap errors with `cockroachdb/errors` (`errors.WithStack` / `errors.Wrap`). Error messages must not
   repeat the package name — the stack provides that. Never swallow errors.
 - Log messages carry a `"package: "` prefix (e.g. `"nats: publishing event…"`).
